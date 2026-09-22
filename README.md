@@ -1,0 +1,200 @@
+# Jev 备考 · 材料自适应自助考试
+
+上传一份学习材料，系统自动切分知识点、出题、按评分点判分，并跟踪薄弱点与错题。
+
+这个项目的核心不是「让模型给个分」，而是把**判定**拆成一批原子的、可核对的问题，用决策模型
+（TypeSafe Jev / System One）逐个判定，再由代码合成分数。分数为什么是这样的，可以在结果页逐条核对。
+
+## 界面
+
+![判定报告：总分、待复核数量与客观题正确数](docs/screenshots/result.jpg)
+
+![逐点判定：每个得分点的命中概率与判定强度](docs/screenshots/rubric.jpg)
+
+![确认知识点与题型配比后生成试卷](docs/screenshots/topics.jpg)
+
+![错题本与知识点掌握度](docs/screenshots/mistakes.jpg)
+
+> 以上截图来自本地离线演示模式（未配置 API key 时的降级引擎），所以出题风格偏机械、
+> 判定用的是词面近似而非 Jev。接入 `TYPESAFE_API_KEY` 后界面一致，判定质量不同。
+
+## 这个项目在做什么
+
+三个环节分工是固定的，不能混：
+
+| 环节 | 由谁负责 | 说明 |
+| --- | --- | --- |
+| 材料理解、出题、评分点拆解 | 生成式 LLM（OpenAI 兼容接口） | Jev 不生成任何文字，这一步它做不了 |
+| 客观题判分 | 确定性代码 | 归一化后精确比对；只有填空需要「语义等价」时才调用一次 noul |
+| 要点式主观题判分 | Jev（每个得分点一条 noul） | 概率即得分率，代码按权重合成，并施加矛盾/编造扣分 |
+
+### Jev 在其中的位置
+
+Jev（TypeSafe 的 System One / Decision Model）是**判定引擎**，不是校验框架：
+
+- 输入是 `state`（材料、题目、学生作答）和一组类型化问题；
+- 输出是类型化概率：`noul`（是/否概率 0–1）、`choice`（选项 + 概率分布 + confidence）、
+  `score`（有序 rubric 分数 + confidence）；
+- 它不生成文字、不给理由、不做算术；`noul` 没有 confidence 字段，因此本项目用
+  `strength = |p − 0.5| × 2` 衡量判定强度；
+- 实测成本极低（输入 $0.042/百万 token，输出免费），所以「一个得分点一条问题」这种暴力拆解是可负担的。
+
+换引擎只需实现 `DecisionEngine`（[src/lib/types.ts](src/lib/types.ts)）这一个接口，业务代码不用动。
+
+## 快速开始
+
+```bash
+npm install
+cp .env.example .env        # 可选：不配置任何密钥也能跑（离线演示模式）
+npm run dev                 # http://localhost:3000
+```
+
+首次登录需要一个邀请码。本地可以直接给一个：
+
+```bash
+echo 'INITIAL_INVITE_CODES=DEV-INVITE' >> .env
+```
+
+登录页填邮箱 + `DEV-INVITE` 即可进入。
+
+### 三种运行模式
+
+| 模式 | 触发条件 | 出题 | 判定 | 用途 |
+| --- | --- | --- | --- | --- |
+| 生产 | `TYPESAFE_API_KEY` + `PLATFORM_LLM_API_KEY` | LLM 出题 | Jev 判定 | 真实使用 |
+| 自带密钥 | 用户在设置里填 BYOK | 用户自己的 LLM | 用户自己的 Jev | 不占平台额度 |
+| 离线演示 | 没有任何密钥 | 离线启发式 | 词面相似度 | 本地联调与自动化测试 |
+
+**离线演示模式的判定质量很低**（词面重合近似「是否覆盖该得分点」），界面上会明确标注。
+它存在的意义是让整条闭环、额度、门控、错题本在没有外部依赖时也能被测试覆盖。
+
+## 环境变量
+
+| 变量 | 必需 | 说明 |
+| --- | --- | --- |
+| `DATABASE_URL` | 生产必需 | Postgres 连接串；未设置时使用内存存储（重启即清空） |
+| `SESSION_SECRET` | 生产必需 | 会话签名 + BYOK 加密密钥（scrypt 派生） |
+| `TYPESAFE_API_KEY` | 生产必需 | Jev 判定 |
+| `TYPESAFE_BASE_URL` / `TYPESAFE_MODEL` | 可选 | 默认 `https://api.typesafe.ai` / `jev-latest` |
+| `PLATFORM_LLM_API_KEY` | 生产必需 | 出题用模型（OpenAI 兼容 `/chat/completions`） |
+| `PLATFORM_LLM_BASE_URL` / `PLATFORM_LLM_MODEL` | 可选 | 默认 `https://api.openai.com/v1` / `gpt-5-mini` |
+| `INITIAL_INVITE_CODES` | 可选 | 逗号分隔，首次启动写入邀请码（每个默认 3 次） |
+
+## 判定逻辑
+
+### 客观题（确定性判分）
+
+- 单选按选项下标、判断按布尔值精确比对；
+- 填空先做归一化比对（NFKC、大小写、全半角、标点、`答案：` 前缀），命中 `accepted` 列表即得分；
+- 字面不一致时才调用一次 `noul`（「学生答案与标准答案是否语义等价」），
+  `strength < 0.5` 则标记待复核而不是猜一个分。
+
+### 主观题（逐点判定）
+
+1. 每个 rubric 点生成一条 `noul`，`instructions` 里把该得分点本身作为结构化字段带进去
+   （`question / inspect / point{statement, evidence_span, weight} / focus`），并附
+   `criteria.true/false` 的 `what / not_for / examples`（对照式定义，减少歧义）。
+   注意：Jev 的多个问题是并行、互相独立的，如果所有问题共享同一段指令而只靠 key 区分，
+   模型无法知道自己在判哪一点——这是判定质量的隐形杀手；
+2. 额外两条防护问题：是否与材料或参考答案**矛盾**、是否引入了材料之外的**具体事实**；
+3. 合成：
+
+   ```
+   score = Σ(weightᵢ × noulᵢ) / Σweightᵢ − 0.3×P(矛盾) − 0.3×P(编造)
+   ```
+
+   扣分系数在代码里写死（[src/lib/config.ts](src/lib/config.ts)），不交给模型决定；
+4. 门控：任意关键得分点（权重 ≥ 0.2）判定强度不足，或矛盾/编造检查自身不确定，
+   整题标记**待复核**，结果页给出分数区间，并且**不计入知识点掌握度**。
+
+### 额度
+
+- 每人每日：材料 3 份、题目 100 道、判定 1000 次（[src/lib/config.ts](src/lib/config.ts)）；
+- 按 Asia/Shanghai 自然日重置；
+- 使用自带密钥（BYOK）的调用不占平台额度；
+- 闸门在「生成试卷」与「提交判定」两个入口，超限返回 429。
+
+## 数据模型
+
+核心表（[src/lib/db/schema.ts](src/lib/db/schema.ts)）：
+
+| 表 | 作用 |
+| --- | --- |
+| `users` / `invite_codes` | 邀请制账号，BYOK 密钥加密列 |
+| `materials` | 原始材料（纯文本/Markdown） |
+| `exam_blueprints` | 知识点大纲（每份材料一份，带版本） |
+| `questions` | 题目 + 答案键 + rubric 点 + 原文锚点 |
+| `exams` / `exam_questions` | 试卷与题目顺序（错题重考复用原题） |
+| `attempts` / `answers` / `judgments` | 作答、判定结果、引擎版本、原始响应 |
+| `mastery` / `mistake_items` | 知识点掌握度（EMA，学习率 0.3）与错题本 |
+| `usage_counters` | 每日额度计数 |
+
+迁移：
+
+```bash
+npm run db:generate   # 依据 schema 生成 SQL 迁移到 ./drizzle
+npm run db:push       # 直接推送到目标库
+```
+
+Postgres 路径在测试里用 PGlite（进程内 Postgres）真实执行迁移与查询，
+所以 schema 与 SQL 不是「只过了类型检查」。
+
+## 测试与评测
+
+```bash
+npm test                                       # 单元 + 集成 + HTTP 层
+npm run typecheck
+npm run build
+npm run eval:judge                             # 判定层评测（当前环境引擎）
+npm run eval:judge -- --engine offline         # 离线演示引擎
+npm run eval:judge -- --enforce --consistency 5
+```
+
+对已启动的服务跑一次真实闭环（登录 → 上传 → 出题 → 作答 → 判定 → 结果页）：
+
+```bash
+npm run build && npm run start -- -p 3111      # 另开一个终端
+BASE_URL=http://localhost:3111 INVITE_CODE=DEV-INVITE npm run smoke
+```
+
+离线演示引擎在金标准集上的实测结果：逐点准确率 42.9%、Brier 0.56、置信度全部挤在 0.99 一档——
+这正是「词面重合不能替代校准过的判定模型」的量化证据，也是本项目默认接入 Jev 的原因。
+
+评测脚本会输出：逐点准确率、Brier 分数、校准分桶表、校准单调性、待复核比例、自一致性标准差。
+金标准集在 [eval/golden/subjective.jsonl](eval/golden/subjective.jsonl)（当前 12 道，方案目标是 60–100 道），
+每行是「材料片段 + 题目 + 学生作答 + 逐得分点人工标注」。
+
+验收门槛（`--enforce` 时生效）：逐点准确率 ≥ 90% 且校准单调。
+离线演示引擎达不到这个门槛是预期行为——它只是让闭环可测。
+
+## 目录结构
+
+```
+src/lib/engine/       判定引擎：typesafe(Jev) / llm-judge(对比基线) / lexical(离线演示)
+src/lib/generator/    出题：LLM 出题器、离线出题器、落地校验（schema/锚点/去重）
+src/lib/grading/      判分：客观题确定性判分、主观题逐点合成与门控
+src/lib/db/           Drizzle schema、Store 接口、Postgres 与内存两种实现
+src/lib/services/     业务服务层（材料、大纲、试卷、作答判定、结果、错题、BYOK）
+src/app/api/          Route Handlers：HTTP 契约与测试入口
+src/app/              页面：落地页/材料/大纲确认/作答/判定报告/错题本/设置
+scripts/eval-judge.ts 判定层评测
+```
+
+## 已知取舍
+
+1. **认证**：MVP 使用「邀请码 + 邮箱 + 签名 Cookie」，接口抽象在
+   [src/lib/auth/session.ts](src/lib/auth/session.ts) 的 `AuthProvider`。
+   换成 Supabase Auth（邮箱 OTP）+ RLS 只需要替换该 provider，业务与路由不动。
+2. **材料范围**：只支持粘贴纯文本/Markdown，不做 PDF 解析、OCR 与网页抓取。
+3. **不做数学与代码判分**：计算类题目需要执行器/符号等价检查，Jev 只用于语义要点判定。
+4. **结果页的解释**：Jev 不给理由，所以「为什么」只能来自 rubric 点本身
+   （哪些点命中、哪些没命中、扣分项概率多少），不展示模型解释。
+5. **待复核不自动复审**：按方案约定，低置信度题目只标记、不计入掌握度，不自动调用更强的模型改判。
+
+## 后续路线
+
+- 把金标准集扩到 60–100 题并按知识点分层，接 CI 做回归；
+- 接入 PDF/DOCX 解析与图片 OCR（引入视觉模型）；
+- Supabase Auth + RLS 的真实部署；
+- 主观题低置信度自动交给更强模型复审（作为可选路径，仍保留分数区间）；
+- 自托管决策模型（Kev 等开源复刻）作为 `DecisionEngine` 的第三种实现，摆脱对 TypeSafe 的依赖。
