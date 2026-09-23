@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.3.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.3.1-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -29,9 +29,9 @@ The point of this project is not "let a model give a score". It is to decompose 
 atomic, checkable questions, decide each of them with a decision model (TypeSafe Jev / System One), and
 combine the probabilities in code. Every point in the final score can be audited in the report.
 
-![Judgment report](docs/screenshots/result.jpg)
+![Judgment report](docs/screenshots/result-960.jpg)
 
-![Point-by-point judgment](docs/screenshots/rubric.jpg)
+![Point-by-point judgment](docs/screenshots/rubric-960.jpg)
 
 > Screenshots come from the offline demo mode (the fallback engine used when no API key is configured), so
 > question style is mechanical and grading uses lexical overlap instead of Jev. With `TYPESAFE_API_KEY` the

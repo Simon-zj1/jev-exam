@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.3.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.3.1-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -32,13 +32,13 @@
 
 ## 界面
 
-![判定报告：总分、待复核数量与客观题正确数](docs/screenshots/result.jpg)
+![判定报告：总分、待复核数量与客观题正确数](docs/screenshots/result-960.jpg)
 
-![逐点判定：每个得分点的命中概率与判定强度](docs/screenshots/rubric.jpg)
+![逐点判定：每个得分点的命中概率与判定强度](docs/screenshots/rubric-960.jpg)
 
-![确认知识点与题型配比后生成试卷](docs/screenshots/topics.jpg)
+![确认知识点与题型配比后生成试卷](docs/screenshots/topics-960.jpg)
 
-![错题本与知识点掌握度](docs/screenshots/mistakes.jpg)
+![错题本与知识点掌握度](docs/screenshots/mistakes-960.jpg)
 
 > 截图来自本地离线演示模式（未配置 API key 时的降级引擎），所以出题风格偏机械、
 > 判定用的是词面近似而非 Jev。接入 `TYPESAFE_API_KEY` 后界面一致，判定质量不同。
@@ -46,6 +46,10 @@
 > **想直接看产物而不安装任何东西**：打开
 > [在线示例报告](https://www.simon-zj.top/demo/jev-exam-report.html)（单文件、离线可读），
 > 或看仓库里的 [docs/demo/report.html](docs/demo/report.html)。
+>
+> 上图为 960px 版本；完整三档（1440 / 960 / 640 + 手机裁剪）在
+> [在线图文说明](https://www.simon-zj.top/tech/tools/jev-exam/)里，手机端会自动换用可读的裁剪版，
+> 点击图片可放大查看完整截图。
 
 ## 三个可核对的保证
 
