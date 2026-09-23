@@ -12,17 +12,19 @@
   <a href="README.md"><strong>中文</strong></a> ·
   <a href="README_EN.md">English</a> ·
   <a href="https://www.simon-zj.top/demo/jev-exam-report.html">示例报告</a> ·
+  <a href="docs/architecture.md">架构与取舍</a> ·
   <a href="SKILL.md">Agent Skill</a> ·
   <a href="SECURITY.md">安全边界</a> ·
   <a href="CHANGELOG.md">更新日志</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.2.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.3.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
   <img src="https://img.shields.io/badge/grading-Jev%20%7C%20Decision%20Model-7f5af0" alt="Jev">
+  <img src="https://github.com/Simon-zj1/jev-exam/actions/workflows/ci.yml/badge.svg" alt="CI">
 </p>
 
 这个项目的核心不是「让模型给个分」，而是把**判定**拆成一批原子的、可核对的问题，用决策模型
@@ -98,7 +100,7 @@ echo 'INITIAL_INVITE_CODES=DEV-INVITE' >> .env
 
 Web 版包含：邀请制登录、材料库、知识点确认、作答、逐点判定报告、错题本与掌握度、每日额度、BYOK。
 
-### 用法二：Agent Skill / 命令行（零服务器）
+### 用法二：Agent Skill / 命令行 / MCP（零服务器）
 
 ```bash
 git clone https://github.com/Simon-zj1/jev-exam.git ~/.agents/skills/jev-exam   # Codex / Copilot CLI
@@ -109,14 +111,33 @@ cd ~/.agents/skills/jev-exam && npm install
 装好后在对话里说「用这份材料考我」——Agent 按 [SKILL.md](SKILL.md) 出题，脚本负责校验、判定与渲染：
 
 ```bash
-npx tsx scripts/study.ts verify  --material examples/agent-interview-notes.md --exam exam.json --strict
-npx tsx scripts/study.ts answer-template --exam exam.json --out answers.json
-npx tsx scripts/study.ts grade   --material examples/agent-interview-notes.md --exam exam.json \
-                                 --answers answers.json --out ./learning_work --engine auto
-npx tsx scripts/study.ts render  --report learning_work/report.json --out report.html
+npx jev-exam verify  --material examples/agent-interview-notes.md --exam exam.json --strict
+npx jev-exam answer-template --exam exam.json --out answers.json
+npx jev-exam grade   --material examples/agent-interview-notes.md --exam exam.json \
+                     --answers answers.json --out ./learning_work --engine auto
+npx jev-exam render  --report learning_work/report.json --out report.html
 ```
 
 产物是**离线单文件报告**（无外部请求、无字体/CDN 依赖）：`report.json` + `report.html` + `report.md`。
+
+不想用 shell 的 Agent 可以直接挂 MCP server（四个工具：校验 / 出模板 / 判分 / 渲染）：
+
+```bash
+claude mcp add jev-exam -- npx -y jev-exam@latest mcp
+```
+
+```json
+{ "mcpServers": { "jev-exam": { "command": "npx", "args": ["-y", "jev-exam@latest", "mcp"] } } }
+```
+
+仓库里还带了给编码 Agent 的规则（[AGENTS.md](AGENTS.md)、`.cursor/rules/`）与
+[llms.txt](llms.txt)，避免别人改这个仓库时破坏「材料事实必须可定位」「判定必须走 DecisionEngine」这些契约。
+
+### 一键部署 Web 版
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSimon-zj1%2Fjev-exam&env=AI_API_KEY&envDescription=%E5%87%BA%E9%A2%98%E6%A8%A1%E5%9E%8B%E7%9A%84%20key&project-name=jev-exam&repository-name=jev-exam)
+
+只问一个变量：`AI_API_KEY`。不配置任何 key 也能部署成功，会运行在离线演示模式（界面会标注）。
 
 ### 三种运行模式
 
@@ -148,7 +169,10 @@ npx tsx scripts/study.ts render  --report learning_work/report.json --out report
 | `SESSION_SECRET` | 生产必需 | 会话签名 + BYOK 加密密钥（scrypt 派生） |
 | `TYPESAFE_API_KEY` | 生产必需 | Jev 判定 |
 | `TYPESAFE_BASE_URL` / `TYPESAFE_MODEL` | 可选 | 默认 `https://api.typesafe.ai` / `jev-latest` |
-| `PLATFORM_LLM_API_KEY` | 生产必需 | 出题用模型（OpenAI 兼容） |
+| `AI_API_KEY` | 推荐 | 出题模型的单 key，provider 从 key 形状推断（`sk-ant-` Anthropic / `sk-or-` OpenRouter / `AIza` Google / `gsk_` Groq / `xai-` xAI / `vck_` Vercel Gateway / `sk-` OpenAI） |
+| `AI_PROVIDER` | 可选 | key 没有可识别前缀时指定（`mistral` / `deepseek`） |
+| `AI_BASE_URL` / `CHAT_MODEL` | 可选 | 指向任何 OpenAI 兼容服务（Ollama / LM Studio / vLLM）与自定义模型名 |
+| `PLATFORM_LLM_API_KEY` | 可选 | 显式方式，设置后优先于 `AI_API_KEY` |
 | `PLATFORM_LLM_BASE_URL` / `PLATFORM_LLM_MODEL` | 可选 | 默认 `https://api.openai.com/v1` / `gpt-5-mini` |
 | `INITIAL_INVITE_CODES` | 可选 | 逗号分隔，首次启动写入邀请码（每个默认 3 次） |
 
@@ -223,6 +247,9 @@ npm run eval:judge -- --enforce --consistency 5
 npm run demo:report                            # 重新生成 docs/demo 下的示例报告
 ```
 
+CI（[.github/workflows/ci.yml](.github/workflows/ci.yml)）在每次 push/PR 跑完整同一条链：
+`npm ci` → `typecheck` → `test` → `build` → `demo:report` → `eval:judge`（离线引擎，仅作反例对照）。
+
 对已启动的服务跑一次真实闭环（登录 → 上传 → 出题 → 作答 → 判定 → 结果页）：
 
 ```bash
@@ -242,8 +269,11 @@ BASE_URL=http://localhost:3111 INVITE_CODE=DEV-INVITE npm run smoke
 ## 目录结构
 
 ```
+AGENTS.md             给编码 Agent 的项目规则（判定链路 / 溯源契约 / 测试要求）
+llms.txt              给 LLM 的项目索引（关键文件与命令）
 SKILL.md               Agent Skill 入口（给 Codex / Claude Code 用）
 scripts/study.ts       命令行：verify / grade / render / answer-template / demo
+scripts/mcp-server.ts  MCP server：verify_exam / answer_template / grade_answers / render_report
 scripts/eval-judge.ts  判定层评测（金标准集 + 校准分桶）
 src/lib/engine/        判定引擎：typesafe(Jev) / llm-judge(对比基线) / lexical(离线演示)
 src/lib/generator/     出题：LLM 出题器、离线出题器、落地校验（schema/锚点/去重）
@@ -255,9 +285,11 @@ src/lib/report.ts      离线 HTML / Markdown 报告渲染
 src/lib/db/            Drizzle schema、Store 接口、Postgres 与内存两种实现
 src/lib/services/      业务服务层（材料、大纲、试卷、作答判定、结果、错题、BYOK）
 src/app/api/           Route Handlers：HTTP 契约与测试入口
-src/app/               页面：落地页/材料/大纲确认/作答/判定报告/错题本/设置
+src/app/               页面：落地页/材料/大纲确认/作答（逐题判定进度）/判定报告/错题本/设置
+docs/architecture.md   架构、数据流与取舍（面试可读）
 docs/demo/             可直接打开的示例报告（由 scripts/study.ts 生成）
 examples/              示例材料
+.github/workflows/     CI：类型检查 + 测试 + 构建 + 生成示例报告
 ```
 
 ## 安全与隐私

@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 类型检查
+        run: npm run typecheck
+
+      - name: 测试（单元 / 集成 / HTTP / CLI / MCP / PGlite 真库）
+        run: npm test
+
+      - name: 构建
+        run: npm run build
+
+      - name: 生成示例报告（确保 CLI 链路可用）
+        run: npm run demo:report
+
+      - name: 判定评测（离线引擎，仅作反例对照，不设门槛）
+        run: npm run eval:judge -- --engine offline

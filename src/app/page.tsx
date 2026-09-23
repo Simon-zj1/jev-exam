@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { TopBar } from "@/components/top-bar";
+import { QuotaCard } from "@/components/quota-card";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getStore } from "@/lib/db";
 import { checkQuota } from "@/lib/quota";
+import { readByok } from "@/lib/services/byok";
 import { listMasteryForUser } from "@/lib/services/mistakes";
 import { listExamSummaries } from "@/lib/services/results";
 import { engineStatus } from "@/lib/services/status";
@@ -118,37 +120,46 @@ export default async function HomePage() {
           {status.demoMode ? "（离线演示模式，质量不代表真实 Jev）" : ""}
         </p>
 
-        <section className="card">
-          <div className="grid grid--3">
-            <div>
-              <div className="small muted">材料</div>
-              <div className="score">{materials.length}</div>
+        <div className="grid grid--2">
+          <section className="card">
+            <QuotaCard usage={quota.usage} byokActive={Boolean(readByok(user))} />
+            <div className="divider" />
+            <div className="row">
+              <Link className="pill" href="/materials">
+                上传新材料 →
+              </Link>
+              <Link className="pill" href="/mistakes">
+                查看错题本 →
+              </Link>
             </div>
-            <div>
-              <div className="small muted">今日剩余题目额度</div>
-              <div className="score">
-                {Math.max(0, quota.limits.question - quota.usage.question)}
-                <span className="small muted"> / {quota.limits.question}</span>
+          </section>
+          <section className="card">
+            <div className="row row--between">
+              <strong>学习概况</strong>
+              <span className="small muted">材料 {materials.length} 份</span>
+            </div>
+            <div className="grid grid--3" style={{ marginTop: 8 }}>
+              <div>
+                <div className="small muted">试卷</div>
+                <div className="score">{exams.length}</div>
+              </div>
+              <div>
+                <div className="small muted">已考</div>
+                <div className="score">{exams.filter((item) => item.latestAttempt).length}</div>
+              </div>
+              <div>
+                <div className="small muted">待复核</div>
+                <div className="score">
+                  {exams.reduce((sum, item) => sum + (item.latestAttempt?.needsReviewCount ?? 0), 0)}
+                </div>
               </div>
             </div>
-            <div>
-              <div className="small muted">今日剩余判定额度</div>
-              <div className="score">
-                {Math.max(0, quota.limits.judgment - quota.usage.judgment)}
-                <span className="small muted"> / {quota.limits.judgment}</span>
-              </div>
-            </div>
-          </div>
-          <div className="divider" />
-          <div className="row">
-            <Link className="pill" href="/materials">
-              上传新材料 →
-            </Link>
-            <Link className="pill" href="/mistakes">
-              查看错题本 →
-            </Link>
-          </div>
-        </section>
+            <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
+              判定引擎：{status.judgeLabel}；出题：{status.generatorLabel}
+              {status.generatorModel ? `（${status.generatorModel}）` : ""}
+            </p>
+          </section>
+        </div>
 
         <div className="grid grid--2">
           <section className="card">

@@ -203,9 +203,26 @@ export function referenceAnswerFor(question: GeneratedQuestion): string {
   }
 }
 
-export function renderReportHtml(report: StudyReport, options: { title?: string } = {}): string {
+export type ReportRenderOptions = {
+  title?: string;
+  /** 页脚品牌名，默认用报告里的 app 名 */
+  brand?: string;
+  /** 主色（任意 CSS 颜色），默认 #2f5bff */
+  accent?: string;
+  /** 页脚补充说明，例如公司名或免责声明 */
+  footerNote?: string;
+  /** 追加的自定义 CSS，用来把报告套进你自己的品牌 */
+  customCss?: string;
+};
+
+export function renderReportHtml(
+  report: StudyReport,
+  options: ReportRenderOptions = {},
+): string {
   const title = options.title ?? `${report.material.title} · 判定报告`;
   const esc = escapeHtml;
+  const accent = options.accent ?? "#2f5bff";
+  const brand = options.brand ?? report.app;
 
   const questions = report.questions
     .map((view) => {
@@ -311,7 +328,7 @@ export function renderReportHtml(report: StudyReport, options: { title?: string 
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${esc(title)}</title>
 <style>
-:root{--bg:#f5f6f8;--surface:#fff;--text:#15181e;--muted:#5c6472;--line:#e3e6eb;--brand:#2f5bff;--ok:#12805c;--warn:#9a6100;--err:#b42318}
+:root{--bg:#f5f6f8;--surface:#fff;--text:#15181e;--muted:#5c6472;--line:#e3e6eb;--brand:${esc(accent)};--ok:#12805c;--warn:#9a6100;--err:#b42318}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1115;--surface:#171a20;--text:#e9ecf1;--muted:#9aa3b2;--line:#262b34;--brand:#7f9dff;--ok:#4ade9f;--warn:#e2b34a;--err:#ff8b7d}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
@@ -351,6 +368,7 @@ blockquote{margin:8px 0;padding:8px 12px;border-left:3px solid var(--line);color
 .uncovered{margin:8px 0 0;padding-left:18px;color:var(--warn);font-size:13.5px}
 .foot{margin-top:28px;color:var(--muted);font-size:12.5px}
 @media print{.q,.card{break-inside:avoid}}
+${options.customCss ?? ""}
 </style>
 </head>
 <body>
@@ -393,6 +411,8 @@ blockquote{margin:8px 0;padding:8px 12px;border-left:3px solid var(--line);color
     标签说明：<span class="tag tag--material">材料原文</span> 可在材料中逐字定位；
     <span class="tag tag--model">模型补充</span> 由模型生成，措辞可能与原文不同。
     待复核题目的判定强度不足，分数仅供参考，也不计入知识点掌握度。
+    <br />
+    由 ${esc(brand)} 生成${options.footerNote ? ` · ${esc(options.footerNote)}` : ""}。
   </p>
 </div>
 </body>

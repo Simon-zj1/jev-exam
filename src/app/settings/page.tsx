@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { ByokForm } from "@/components/byok-form";
+import { QuotaCard } from "@/components/quota-card";
 import { TopBar } from "@/components/top-bar";
 import { getCurrentUser } from "@/lib/auth/session";
 import { checkQuota } from "@/lib/quota";
@@ -24,35 +25,7 @@ export default async function SettingsPage() {
 
         <section className="card">
           <h2>今日额度</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>项目</th>
-                <th>已用</th>
-                <th>上限</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>上传材料</td>
-                <td>{quota.usage.material}</td>
-                <td>{quota.limits.material}</td>
-              </tr>
-              <tr>
-                <td>生成题目</td>
-                <td>{quota.usage.question}</td>
-                <td>{quota.limits.question}</td>
-              </tr>
-              <tr>
-                <td>判定次数</td>
-                <td>{quota.usage.judgment}</td>
-                <td>{quota.limits.judgment}</td>
-              </tr>
-            </tbody>
-          </table>
-          <p className="small muted" style={{ marginTop: 10 }}>
-            额度按 Asia/Shanghai 自然日重置。使用自带密钥（BYOK）的调用不占用平台额度。
-          </p>
+          <QuotaCard usage={quota.usage} byokActive={byok.judgeConfigured || byok.llmConfigured} />
         </section>
 
         <section className="card">
@@ -71,6 +44,17 @@ export default async function SettingsPage() {
                   {status.generatorLabel}（{status.generatorMode}）
                 </td>
               </tr>
+              {status.generatorModel ? (
+                <tr>
+                  <td>模型与来源</td>
+                  <td>
+                    {status.generatorModel}
+                    {status.generatorProvider ? ` · ${status.generatorProvider}` : ""} ·{" "}
+                    {status.generatorSource}
+                    {status.generatorDetectedFromKey ? "（由 key 形状推断）" : ""}
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
           {status.demoMode ? (

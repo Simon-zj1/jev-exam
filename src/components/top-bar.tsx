@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { UserRecord } from "@/lib/db/types";
 import { LogoutButton } from "@/components/logout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function TopBar({ user }: { user: UserRecord | null }) {
   return (
@@ -15,6 +16,7 @@ export function TopBar({ user }: { user: UserRecord | null }) {
           <Link href="/settings">设置</Link>
         </nav>
         <div className="topbar__right">
+          <ThemeToggle />
           {user ? (
             <>
               <span>{user.email}</span>

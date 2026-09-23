@@ -1,5 +1,31 @@
 # 更新日志
 
+## v0.3.0 · 2026-09-24
+
+### 新增
+
+- **逐题判定（渐进式）**：作答页把判定拆成 `POST /api/exams/[id]/judge`（逐题）+
+  `POST /api/exams/[id]/finalize`（收卷）。界面并发 4 路判定并实时显示每题结果、
+  进度条与当前均分，不再让用户对着一个转圈等全部结束。`/submit` 保留为一次性入口。
+- **命令行不再是内部脚本**：新增 `bin/jev-exam.mjs` 与 npm 包配置，
+  `npx jev-exam verify/grade/render/answer-template` 可直接使用（源码即执行体，无需构建）。
+- **MCP server**：`scripts/mcp-server.ts` 暴露 `verify_exam` / `answer_template` /
+  `grade_answers` / `render_report` 四个工具，Claude Code、Codex、Cursor 可直接调用。
+- **单 key 配置**：新增 `AI_API_KEY`，provider 从 key 形状推断（Anthropic / OpenRouter /
+  Google / Groq / xAI / Vercel Gateway / OpenAI），并支持 `AI_PROVIDER`、`AI_BASE_URL`、`CHAT_MODEL`；
+  Vercel 一键部署只需填一个变量。只有出题 key 时，判定回落到 LLM 基线而不是离线演示引擎。
+- **额度可视化**：额度卡带进度条、重置倒计时与 BYOK 提示（仪表盘与设置页共用）。
+- **深色模式**：语义变量整体翻转 + 顶栏手动切换（首屏前应用，无闪白）。
+- **报告可定制**：`renderReportHtml` 支持 `brand` / `accent` / `footerNote` / `customCss`。
+- **Agent 协作文件**：`AGENTS.md`、`.cursor/rules/jev-exam.mdc`、`llms.txt`。
+- **CI**：`.github/workflows/ci.yml` 跑 typecheck → test → build → demo → eval。
+- **架构文档**：`docs/architecture.md`（数据流、取舍、验证数字、交付形态）。
+
+### 修复
+
+- MCP server 在 `process.exit` 前未等 stdout 排空，导致十几 KB 的报告响应被截断
+  （客户端会报 “Unterminated string”）；现在逐行等待写入完成，并自然退出。
+
 ## v0.2.0 · 2026-09-24
 
 ### 新增

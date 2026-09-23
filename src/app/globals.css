@@ -17,6 +17,33 @@
   --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
 }
 
+/* 深色模式：同一套语义变量整体翻转，组件样式不改 */
+html[data-theme="dark"] {
+  --bg: #0f1115;
+  --surface: #171a20;
+  --surface-muted: #1b1f27;
+  --text: #e9ecf1;
+  --muted: #9aa3b2;
+  --border: #262b34;
+  --brand: #8aa2ff;
+  --brand-soft: #1c2340;
+  --ok: #4ade9f;
+  --ok-soft: #14251d;
+  --warn: #e2b34a;
+  --warn-soft: #2a2313;
+  --err: #ff8b7d;
+  --err-soft: #2b1a18;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .topbar {
+  background: rgba(23, 26, 32, 0.9);
+}
+
+html[data-theme="dark"] .code-block {
+  background: #0b0e14;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -385,6 +412,10 @@ button:disabled {
   background: #e8a33d;
 }
 
+.meter__fill--err {
+  background: var(--err);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -474,15 +505,23 @@ th {
 }
 
 .tag--material {
-  border-color: #bfe6d4;
+  border-color: color-mix(in srgb, var(--ok) 40%, transparent);
   color: var(--ok);
   background: var(--ok-soft);
 }
 
 .tag--model {
-  border-color: #d6ddff;
+  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
   color: var(--brand);
   background: var(--brand-soft);
+}
+
+.theme-toggle {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  padding: 4px 10px;
+  font-size: 13px;
 }
 
 /* 原文出处：悬停或键盘聚焦都能看到 */

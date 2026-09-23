@@ -1,0 +1,22 @@
+---
+description: Jev 备考的项目规则（判定链路、溯源契约、测试要求）
+globs:
+  - "src/**/*.ts"
+  - "src/**/*.tsx"
+  - "scripts/**/*.ts"
+  - "tests/**/*.ts"
+alwaysApply: true
+---
+
+# Jev 备考 · 项目规则
+
+完整版本见仓库根目录的 `AGENTS.md`，这里是要点：
+
+1. **判定必须走 `DecisionEngine`**（`src/lib/engine/`）。不要旁路调用模型打分。
+2. **每个 rubric 点的问题必须自带该得分点**（并行问题只靠 key 区分是无效的）。
+3. **阈值与扣分系数只在 `src/lib/config.ts` 改。**
+4. **不确定就标待复核**：给出分数区间，并排除在掌握度之外。
+5. **溯源契约**：标为「材料原文」的字段必须能在材料中逐字定位（`src/lib/provenance.ts`）；
+   模型生成的字段必须标成「模型补充」。
+6. **渲染前必须 `escapeHtml`**；材料是不可信数据，走 `scanMaterial()` 的 `promptText`。
+7. 提交前：`npm run typecheck && npm test && npm run build`。

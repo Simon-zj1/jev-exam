@@ -9,6 +9,8 @@ import { GET as examRoute } from "@/app/api/exams/[id]/route";
 import { POST as submitRoute } from "@/app/api/exams/[id]/submit/route";
 import { GET as attemptRoute } from "@/app/api/attempts/[id]/route";
 import { GET as meRoute } from "@/app/api/me/route";
+import { POST as judgeRoute } from "@/app/api/exams/[id]/judge/route";
+import { POST as finalizeRoute } from "@/app/api/exams/[id]/finalize/route";
 import { QUOTA_LIMITS } from "@/lib/config";
 import { getStore } from "@/lib/db";
 import { setDecisionEngineOverride } from "@/lib/engine";
@@ -70,11 +72,112 @@ describe("HTTP 层（路由处理器）", () => {
       await materialsRoute(jsonRequest("/api/materials")),
       await createMaterialRoute(jsonRequest("/api/materials", { method: "POST", body: {} })),
       await meRoute(jsonRequest("/api/me")),
+      await judgeRoute(
+        jsonRequest("/api/exams/exam_x/judge", {
+          method: "POST",
+          body: { questionId: "q1", payload: null },
+        }),
+        params("exam_x"),
+      ),
+      await finalizeRoute(
+        jsonRequest("/api/exams/exam_x/finalize", { method: "POST" }),
+        params("exam_x"),
+      ),
     ]) {
       expect(response.status).toBe(401);
       const body = (await response.json()) as { code: string };
       expect(body.code).toBe("unauthorized");
     }
+  });
+
+  it("逐题判定 + 收卷：与一次性提交等价，重复收卷不会重复计分", async () => {
+    const { cookie } = await login("progressive@example.com", "HTTP-CODE");
+
+    const created = await createMaterialRoute(
+      jsonRequest("/api/materials", {
+        method: "POST",
+        cookie,
+        body: { title: "渐进判定材料", rawText: SAMPLE_MATERIAL },
+      }),
+    );
+    const materialId = ((await created.json()) as { material: { id: string } }).material.id;
+    await outlineRoute(
+      jsonRequest(`/api/materials/${materialId}/outline`, { method: "POST", cookie, body: {} }),
+      params(materialId),
+    );
+    const examResponse = await createExamRoute(
+      jsonRequest("/api/exams", {
+        method: "POST",
+        cookie,
+        body: { materialId, topicIds: [], count: 6, mix: { mcq: 3, true_false: 2, cloze: 1 } },
+      }),
+    );
+    const examId = ((await examResponse.json()) as { examId: string }).examId;
+
+    const takeBody = (await (
+      await examRoute(jsonRequest(`/api/exams/${examId}`, { cookie }), params(examId))
+    ).json()) as { questions: { id: string; type: string }[] };
+    expect(takeBody.questions.length).toBeGreaterThan(0);
+
+    // 逐题判定：每题一次请求，返回可立即展示的结论
+    for (const question of takeBody.questions) {
+      const payload =
+        question.type === "mcq"
+          ? { type: "mcq", index: 0 }
+          : question.type === "true_false"
+            ? { type: "true_false", value: true }
+            : { type: "cloze", text: "光反应" };
+      const judged = await judgeRoute(
+        jsonRequest(`/api/exams/${examId}/judge`, {
+          method: "POST",
+          cookie,
+          body: { questionId: question.id, payload },
+        }),
+        params(examId),
+      );
+      expect(judged.status).toBe(200);
+      const verdict = (await judged.json()) as { questionId: string; scorePercent: number };
+      expect(verdict.questionId).toBe(question.id);
+      expect(typeof verdict.scorePercent).toBe("number");
+    }
+
+    // 不属于这份试卷的题目应被拒绝
+    const foreign = await judgeRoute(
+      jsonRequest(`/api/exams/${examId}/judge`, {
+        method: "POST",
+        cookie,
+        body: { questionId: "q_not_in_exam", payload: null },
+      }),
+      params(examId),
+    );
+    expect(foreign.status).toBe(404);
+
+    const finalized = await finalizeRoute(
+      jsonRequest(`/api/exams/${examId}/finalize`, { method: "POST", cookie }),
+      params(examId),
+    );
+    expect(finalized.status).toBe(200);
+    const result = (await finalized.json()) as {
+      attemptId: string;
+      scorePercent: number;
+      judgedCount: number;
+    };
+    expect(result.judgedCount).toBe(takeBody.questions.length);
+
+    // 重复收卷：返回同一条 attempt，分数不变（掌握度不会被重复计入）
+    const again = await finalizeRoute(
+      jsonRequest(`/api/exams/${examId}/finalize`, { method: "POST", cookie }),
+      params(examId),
+    );
+    const second = (await again.json()) as { attemptId: string; scorePercent: number };
+    expect(second.attemptId).toBe(result.attemptId);
+    expect(second.scorePercent).toBe(result.scorePercent);
+
+    const report = await attemptRoute(
+      jsonRequest(`/api/attempts/${result.attemptId}`, { cookie }),
+      params(result.attemptId),
+    );
+    expect(report.status).toBe(200);
   });
 
   it("邀请码登录后才可访问，且邀请码错误会被拒绝", async () => {

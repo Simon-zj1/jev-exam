@@ -59,3 +59,57 @@ export async function recordUsage(
 export async function usageSnapshot(userId: string): Promise<UsageSnapshot> {
   return getStore().getUsage(userId, dayKey());
 }
+
+/** Asia/Shanghai 没有夏令时，直接按固定偏移计算下一次重置时间。 */
+const SHANGHAI_OFFSET_MS = 8 * 60 * 60 * 1000;
+
+export type QuotaResetInfo = {
+  resetAt: Date;
+  minutesLeft: number;
+  label: string;
+};
+
+export function quotaResetInfo(now: Date = new Date()): QuotaResetInfo {
+  const shanghai = new Date(now.getTime() + SHANGHAI_OFFSET_MS);
+  const nextMidnightShanghai = Date.UTC(
+    shanghai.getUTCFullYear(),
+    shanghai.getUTCMonth(),
+    shanghai.getUTCDate() + 1,
+  );
+  const resetAt = new Date(nextMidnightShanghai - SHANGHAI_OFFSET_MS);
+  const minutesLeft = Math.max(0, Math.round((resetAt.getTime() - now.getTime()) / 60_000));
+  const hours = Math.floor(minutesLeft / 60);
+  return {
+    resetAt,
+    minutesLeft,
+    label:
+      minutesLeft <= 0
+        ? "额度已重置"
+        : hours > 0
+          ? `${hours} 小时 ${minutesLeft % 60} 分钟后重置`
+          : `${minutesLeft} 分钟后重置`,
+  };
+}
+
+export type QuotaRow = {
+  kind: QuotaKind;
+  label: string;
+  used: number;
+  limit: number;
+  ratio: number;
+};
+
+export function quotaRows(usage: UsageSnapshot): QuotaRow[] {
+  const labels: Record<QuotaKind, string> = {
+    material: "上传材料",
+    question: "生成题目",
+    judgment: "判定次数",
+  };
+  return (Object.keys(QUOTA_LIMITS) as QuotaKind[]).map((kind) => ({
+    kind,
+    label: labels[kind],
+    used: usage[kind],
+    limit: QUOTA_LIMITS[kind],
+    ratio: Math.min(1, usage[kind] / QUOTA_LIMITS[kind]),
+  }));
+}

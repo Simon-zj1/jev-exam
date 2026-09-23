@@ -1,8 +1,33 @@
 {
   "name": "jev-exam",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "jev-exam": "./bin/jev-exam.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "scripts",
+    "examples",
+    "drizzle",
+    "docs/demo",
+    "docs/banner.svg",
+    "docs/architecture.md",
+    "SKILL.md",
+    "AGENTS.md",
+    "llms.txt",
+    "README.md",
+    "README_EN.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "tsconfig.json",
+    "next.config.ts",
+    "drizzle.config.ts",
+    ".env.example"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,6 +38,7 @@
     "smoke": "node scripts/smoke.mjs",
     "eval:judge": "tsx scripts/eval-judge.ts",
     "study": "tsx scripts/study.ts",
+    "mcp": "tsx scripts/mcp-server.ts",
     "demo:report": "tsx scripts/study.ts demo --out docs/demo",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push"
@@ -23,6 +49,7 @@
     "postgres": "^3.4.9",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "tsx": "^4.20.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -31,7 +58,6 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "drizzle-kit": "^0.31.11",
-    "tsx": "^4.20.0",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
   }
