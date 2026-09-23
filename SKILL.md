@@ -25,6 +25,9 @@ git clone https://github.com/Simon-zj1/jev-exam.git ~/.claude/skills/jev-exam   
 cd ~/.agents/skills/jev-exam && npm install
 ```
 
+技能目录已经 `npm install` 之后，本文件里的命令用 `npx tsx scripts/study.ts <子命令>` 即可；
+如果该包已经发布到 npm，也可以直接用 `npx jev-exam <子命令>`（两者等价）。
+
 判定引擎（二选一，都不配也能跑但会退化为演示模式）：
 
 - `TYPESAFE_API_KEY`：走 Jev（推荐，逐点概率 + 置信度校准）。

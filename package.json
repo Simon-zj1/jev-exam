@@ -1,8 +1,27 @@
 {
   "name": "jev-exam",
   "version": "0.3.0",
-  "private": true,
   "type": "module",
+  "description": "把上传的学习材料变成可自动判分的自助考试：出题交给 LLM，判定交给决策模型（TypeSafe Jev），报告与覆盖率可逐条核对。",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "ai-agent",
+    "mcp",
+    "llm-evaluation",
+    "jev",
+    "decision-model",
+    "exam-prep",
+    "education"
+  ],
+  "homepage": "https://www.simon-zj.top/tech/tools/jev-exam/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Simon-zj1/jev-exam.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "jev-exam": "./bin/jev-exam.mjs"
   },

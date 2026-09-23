@@ -118,6 +118,15 @@ npx jev-exam grade   --material examples/agent-interview-notes.md --exam exam.js
 npx jev-exam render  --report learning_work/report.json --out report.html
 ```
 
+> 包已按 npm 发布形态配置好（`bin` / `files` / `publishConfig`）。如果 `npx jev-exam` 报 404，
+> 说明还没发布；可以先用仓库内的等价命令，或直接从 GitHub 跑：
+>
+> ```bash
+> npx tsx scripts/study.ts verify --material ... --exam ...   # 已 clone 并 npm install
+> npx github:Simon-zj1/jev-exam verify --material ... --exam ...  # 不 clone
+> npm publish   # 想发到 npm 时（需要先 npm login）
+> ```
+
 产物是**离线单文件报告**（无外部请求、无字体/CDN 依赖）：`report.json` + `report.html` + `report.md`。
 
 不想用 shell 的 Agent 可以直接挂 MCP server（四个工具：校验 / 出模板 / 判分 / 渲染）：
