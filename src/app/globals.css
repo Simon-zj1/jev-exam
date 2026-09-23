@@ -460,6 +460,63 @@ th {
   margin: 16px 0;
 }
 
+/* 溯源标签：材料原文 / 模型补充 */
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 0 7px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.tag--material {
+  border-color: #bfe6d4;
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.tag--model {
+  border-color: #d6ddff;
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+
+/* 原文出处：悬停或键盘聚焦都能看到 */
+.source-hint {
+  position: relative;
+  display: inline-block;
+  cursor: help;
+  color: var(--muted);
+  border-bottom: 1px dotted var(--border);
+}
+
+.source-hint:focus-visible {
+  outline: 2px solid var(--brand-soft);
+}
+
+.source-hint:hover::after,
+.source-hint:focus::after {
+  content: attr(data-source);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  width: min(420px, 80vw);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: normal;
+}
+
 @media print {
   .topbar,
   .no-print {

@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "answers": [
+    {
+      "questionId": "q_70e4efd1fd",
+      "payload": {
+        "type": "mcq",
+        "index": 1
+      }
+    },
+    {
+      "questionId": "q_e9c6297f42",
+      "payload": {
+        "type": "mcq",
+        "index": 0
+      }
+    },
+    {
+      "questionId": "q_1b70e8a516",
+      "payload": {
+        "type": "mcq",
+        "index": 0
+      }
+    },
+    {
+      "questionId": "q_fe3c3d98e3",
+      "payload": {
+        "type": "true_false",
+        "value": false
+      }
+    },
+    {
+      "questionId": "q_669d506887",
+      "payload": {
+        "type": "true_false",
+        "value": true
+      }
+    },
+    {
+      "questionId": "q_484c395430",
+      "payload": {
+        "type": "cloze",
+        "text": "微调改行为与格式"
+      }
+    },
+    {
+      "questionId": "q_b2779247f4",
+      "payload": {
+        "type": "short_answer",
+        "text": "检索是 RAG 的第一阶段，决定模型能看到什么证据。 向量检索：把文本编码成向量，用相似度做语义召回。"
+      }
+    }
+  ]
+}

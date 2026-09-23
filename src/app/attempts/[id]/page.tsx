@@ -4,6 +4,8 @@ import { PrintButton } from "@/components/print-button";
 import { RetryMistakesButton } from "@/components/retry-mistakes-button";
 import { TopBar } from "@/components/top-bar";
 import { getCurrentUser } from "@/lib/auth/session";
+import { coverageSummary, verifyCoverage } from "@/lib/coverage";
+import { getStore } from "@/lib/db";
 import { NotFoundError } from "@/lib/errors";
 import {
   formatAnswer,
@@ -12,6 +14,8 @@ import {
   formatReviewReason,
   scoreTone,
 } from "@/lib/format";
+import { locateSource, verifyProvenance } from "@/lib/provenance";
+import { toGeneratedQuestion } from "@/lib/services/questions";
 import { getAttemptResultForUser } from "@/lib/services/results";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +36,11 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
   const { attempt, exam, totals, questions } = result;
   const tone = scoreTone(totals.scorePercent);
   const judgeEngine = questions.find((view) => view.judgment)?.judgment ?? null;
+  const materialText = result.material?.rawText ?? "";
+  const blueprint = await getStore().getBlueprintById(exam.blueprintId);
+  const generated = questions.map((view) => toGeneratedQuestion(view.question));
+  const coverage = verifyCoverage(materialText, blueprint?.topics ?? [], generated);
+  const provenanceViolations = verifyProvenance(materialText, generated);
 
   return (
     <>
@@ -87,9 +96,50 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
           </div>
         </section>
 
+        <section className="card">
+          <h2>这份试卷覆盖了什么</h2>
+          <p className="small muted" style={{ marginBottom: 8 }}>
+            出题模型只保证「每道题都能回到原文」，不保证「材料被覆盖完整」。下面是如实统计：
+          </p>
+          <p className="small">
+            <strong>{coverageSummary(coverage)}</strong>
+          </p>
+          <div className="grid grid--2" style={{ marginTop: 10 }}>
+            <div>
+              <div className="small muted">溯源契约</div>
+              <div className="small">
+                {provenanceViolations.length === 0
+                  ? "所有「材料原文」字段都能在材料中逐字定位。"
+                  : `${provenanceViolations.length} 处未能定位，已如实记录。`}
+              </div>
+            </div>
+            <div>
+              <div className="small muted">未覆盖的材料要点</div>
+              {coverage.uncovered.length === 0 ? (
+                <div className="small">全部要点都有题目覆盖。</div>
+              ) : (
+                <ul className="small" style={{ margin: 0, paddingLeft: 18 }}>
+                  {coverage.uncovered.slice(0, 6).map((unit) => (
+                    <li key={unit.index}>
+                      第 {unit.index + 1} 句：{unit.text.slice(0, 60)}
+                      {unit.text.length > 60 ? "…" : ""}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+
         {questions.map((view) => {
           const judgment = view.judgment;
           const percent = judgment?.scorePercent ?? 0;
+          const sourceLocation = locateSource(materialText, view.question.sourceAnchor);
+          const sourceLabel = sourceLocation.found
+            ? sourceLocation.unitIndex !== null
+              ? `第 ${sourceLocation.unitIndex + 1} 句 / 共 ${sourceLocation.unitCount} 句`
+              : `共 ${sourceLocation.unitCount} 句`
+            : "未定位";
           return (
             <section className="question" key={view.question.id}>
               <div className="question__head">
@@ -113,7 +163,10 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
                   <div>{formatAnswer(view.question, view.payload)}</div>
                 </div>
                 <div>
-                  <div className="small muted">参考答案</div>
+                  <div className="small muted">
+                    参考答案
+                    <span className="tag tag--model">模型补充</span>
+                  </div>
                   <div>{formatCorrectAnswer(view.question)}</div>
                 </div>
               </div>
@@ -134,6 +187,7 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
                 <div style={{ marginTop: 14 }}>
                   <div className="small muted">
                     逐点判定（这就是“为什么得这个分”的全部依据）
+                    <span className="tag tag--model">模型补充</span>
                   </div>
                   <table>
                     <thead>
@@ -173,10 +227,25 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
               ) : null}
 
               <details style={{ marginTop: 12 }}>
-                <summary className="small muted">材料原文溯源</summary>
+                <summary className="small muted">
+                  材料原文溯源 · {sourceLabel}
+                  <span className="tag tag--material">材料原文</span>
+                </summary>
                 <p className="small" style={{ whiteSpace: "pre-wrap", marginTop: 8 }}>
-                  {view.question.sourceAnchor}
+                  <span
+                    className="source-hint"
+                    data-source={`${sourceLabel}：${view.question.sourceAnchor}`}
+                    tabIndex={0}
+                    title={`${sourceLabel}：${view.question.sourceAnchor}`}
+                  >
+                    {view.question.sourceAnchor}
+                  </span>
                 </p>
+                {view.question.explanation ? (
+                  <p className="small muted">
+                    <span className="tag tag--model">模型补充</span> {view.question.explanation}
+                  </p>
+                ) : null}
                 {view.materialExcerpt && view.materialExcerpt !== view.question.sourceAnchor ? (
                   <p className="small muted" style={{ whiteSpace: "pre-wrap" }}>
                     该知识点上下文：{view.materialExcerpt.slice(0, 400)}

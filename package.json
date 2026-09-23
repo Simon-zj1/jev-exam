@@ -12,6 +12,8 @@
     "test:watch": "vitest",
     "smoke": "node scripts/smoke.mjs",
     "eval:judge": "tsx scripts/eval-judge.ts",
+    "study": "tsx scripts/study.ts",
+    "demo:report": "tsx scripts/study.ts demo --out docs/demo",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push"
   },

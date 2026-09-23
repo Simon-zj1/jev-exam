@@ -1,6 +1,29 @@
-# Jev 备考 · 材料自适应自助考试
+<p align="center">
+  <img src="docs/banner.svg" alt="Jev 备考：把学习材料变成可自动判分的考试" width="100%">
+</p>
 
-上传一份学习材料，系统自动切分知识点、出题、按评分点判分，并跟踪薄弱点与错题。
+<h1 align="center">Jev 备考 · Jev Exam Prep</h1>
+
+<p align="center">
+  <strong>上传你自己的学习材料，自动出题，用决策模型逐个得分点判定，并告诉你"哪一句没说到"。</strong>
+</p>
+
+<p align="center">
+  <a href="README.md"><strong>中文</strong></a> ·
+  <a href="README_EN.md">English</a> ·
+  <a href="https://www.simon-zj.top/demo/jev-exam-report.html">示例报告</a> ·
+  <a href="SKILL.md">Agent Skill</a> ·
+  <a href="SECURITY.md">安全边界</a> ·
+  <a href="CHANGELOG.md">更新日志</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-v0.2.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
+  <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
+  <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
+  <img src="https://img.shields.io/badge/grading-Jev%20%7C%20Decision%20Model-7f5af0" alt="Jev">
+</p>
 
 这个项目的核心不是「让模型给个分」，而是把**判定**拆成一批原子的、可核对的问题，用决策模型
 （TypeSafe Jev / System One）逐个判定，再由代码合成分数。分数为什么是这样的，可以在结果页逐条核对。
@@ -15,8 +38,24 @@
 
 ![错题本与知识点掌握度](docs/screenshots/mistakes.jpg)
 
-> 以上截图来自本地离线演示模式（未配置 API key 时的降级引擎），所以出题风格偏机械、
+> 截图来自本地离线演示模式（未配置 API key 时的降级引擎），所以出题风格偏机械、
 > 判定用的是词面近似而非 Jev。接入 `TYPESAFE_API_KEY` 后界面一致，判定质量不同。
+>
+> **想直接看产物而不安装任何东西**：打开
+> [在线示例报告](https://www.simon-zj.top/demo/jev-exam-report.html)（单文件、离线可读），
+> 或看仓库里的 [docs/demo/report.html](docs/demo/report.html)。
+
+## 三个可核对的保证
+
+这三个是「凭什么相信这个分数」的全部依据，也是本项目和「让 LLM 打个分」的区别：
+
+| 保证 | 做法 | 在哪里 |
+| --- | --- | --- |
+| **材料事实可定位** | `source_anchor`、`evidence_span` 必须逐字出现在原文，定位失败记为违规并在报告里列出 | `src/lib/provenance.ts` |
+| **覆盖率不假装完整** | 把材料切成要点单位，列出没有被任何题目覆盖的句子，如实显示「覆盖 9/14」 | `src/lib/coverage.ts` |
+| **不确定就标出来** | 判定强度不足的得分点让整题变为「待复核」，给出分数区间，且不计入掌握度 | `src/lib/grading/subjective.ts` |
+
+报告里每个字段都带来源标签：**材料原文**（可在材料中逐字定位）或**模型补充**（模型生成，允许改写措辞）。
 
 ## 这个项目在做什么
 
@@ -24,7 +63,7 @@
 
 | 环节 | 由谁负责 | 说明 |
 | --- | --- | --- |
-| 材料理解、出题、评分点拆解 | 生成式 LLM（OpenAI 兼容接口） | Jev 不生成任何文字，这一步它做不了 |
+| 材料理解、出题、评分点拆解 | 生成式 LLM / 你的 Agent | Jev 不生成任何文字，这一步它做不了 |
 | 客观题判分 | 确定性代码 | 归一化后精确比对；只有填空需要「语义等价」时才调用一次 noul |
 | 要点式主观题判分 | Jev（每个得分点一条 noul） | 概率即得分率，代码按权重合成，并施加矛盾/编造扣分 |
 
@@ -41,7 +80,9 @@ Jev（TypeSafe 的 System One / Decision Model）是**判定引擎**，不是校
 
 换引擎只需实现 `DecisionEngine`（[src/lib/types.ts](src/lib/types.ts)）这一个接口，业务代码不用动。
 
-## 快速开始
+## 两种用法
+
+### 用法一：Web 应用（完整闭环）
 
 ```bash
 npm install
@@ -55,7 +96,27 @@ npm run dev                 # http://localhost:3000
 echo 'INITIAL_INVITE_CODES=DEV-INVITE' >> .env
 ```
 
-登录页填邮箱 + `DEV-INVITE` 即可进入。
+Web 版包含：邀请制登录、材料库、知识点确认、作答、逐点判定报告、错题本与掌握度、每日额度、BYOK。
+
+### 用法二：Agent Skill / 命令行（零服务器）
+
+```bash
+git clone https://github.com/Simon-zj1/jev-exam.git ~/.agents/skills/jev-exam   # Codex / Copilot CLI
+git clone https://github.com/Simon-zj1/jev-exam.git ~/.claude/skills/jev-exam   # Claude Code
+cd ~/.agents/skills/jev-exam && npm install
+```
+
+装好后在对话里说「用这份材料考我」——Agent 按 [SKILL.md](SKILL.md) 出题，脚本负责校验、判定与渲染：
+
+```bash
+npx tsx scripts/study.ts verify  --material examples/agent-interview-notes.md --exam exam.json --strict
+npx tsx scripts/study.ts answer-template --exam exam.json --out answers.json
+npx tsx scripts/study.ts grade   --material examples/agent-interview-notes.md --exam exam.json \
+                                 --answers answers.json --out ./learning_work --engine auto
+npx tsx scripts/study.ts render  --report learning_work/report.json --out report.html
+```
+
+产物是**离线单文件报告**（无外部请求、无字体/CDN 依赖）：`report.json` + `report.html` + `report.md`。
 
 ### 三种运行模式
 
@@ -68,15 +129,26 @@ echo 'INITIAL_INVITE_CODES=DEV-INVITE' >> .env
 **离线演示模式的判定质量很低**（词面重合近似「是否覆盖该得分点」），界面上会明确标注。
 它存在的意义是让整条闭环、额度、门控、错题本在没有外部依赖时也能被测试覆盖。
 
+## 运行要求与兼容性
+
+| 项目 | 要求 | 缺失时的行为 |
+| --- | --- | --- |
+| Node.js | ≥ 20（开发用 22 验证） | 无法运行 |
+| 数据库 | 生产需要 Postgres（Supabase / Neon / 自建） | 未设置 `DATABASE_URL` 时使用内存存储，重启即清空 |
+| 判定引擎 | `TYPESAFE_API_KEY`（Jev） | 回落到 LLM 判定；都没有则用离线词面引擎并明确标注 |
+| 出题模型 | `PLATFORM_LLM_API_KEY`（OpenAI 兼容 `/chat/completions`） | 回落到离线启发式出题器 |
+| Agent 环境 | 能读文件、能跑本地命令、识别 `SKILL.md` | 只能用 Web 版；纯聊天环境无法完成校验与渲染 |
+| 材料格式 | 纯文本 / Markdown（Web 版为粘贴） | PDF/EPUB 请先自行抽取为文本 |
+
 ## 环境变量
 
 | 变量 | 必需 | 说明 |
 | --- | --- | --- |
-| `DATABASE_URL` | 生产必需 | Postgres 连接串；未设置时使用内存存储（重启即清空） |
+| `DATABASE_URL` | 生产必需 | Postgres 连接串；未设置时使用内存存储 |
 | `SESSION_SECRET` | 生产必需 | 会话签名 + BYOK 加密密钥（scrypt 派生） |
 | `TYPESAFE_API_KEY` | 生产必需 | Jev 判定 |
 | `TYPESAFE_BASE_URL` / `TYPESAFE_MODEL` | 可选 | 默认 `https://api.typesafe.ai` / `jev-latest` |
-| `PLATFORM_LLM_API_KEY` | 生产必需 | 出题用模型（OpenAI 兼容 `/chat/completions`） |
+| `PLATFORM_LLM_API_KEY` | 生产必需 | 出题用模型（OpenAI 兼容） |
 | `PLATFORM_LLM_BASE_URL` / `PLATFORM_LLM_MODEL` | 可选 | 默认 `https://api.openai.com/v1` / `gpt-5-mini` |
 | `INITIAL_INVITE_CODES` | 可选 | 逗号分隔，首次启动写入邀请码（每个默认 3 次） |
 
@@ -148,6 +220,7 @@ npm run build
 npm run eval:judge                             # 判定层评测（当前环境引擎）
 npm run eval:judge -- --engine offline         # 离线演示引擎
 npm run eval:judge -- --enforce --consistency 5
+npm run demo:report                            # 重新生成 docs/demo 下的示例报告
 ```
 
 对已启动的服务跑一次真实闭环（登录 → 上传 → 出题 → 作答 → 判定 → 结果页）：
@@ -157,44 +230,63 @@ npm run build && npm run start -- -p 3111      # 另开一个终端
 BASE_URL=http://localhost:3111 INVITE_CODE=DEV-INVITE npm run smoke
 ```
 
-离线演示引擎在金标准集上的实测结果：逐点准确率 42.9%、Brier 0.56、置信度全部挤在 0.99 一档——
-这正是「词面重合不能替代校准过的判定模型」的量化证据，也是本项目默认接入 Jev 的原因。
-
 评测脚本会输出：逐点准确率、Brier 分数、校准分桶表、校准单调性、待复核比例、自一致性标准差。
 金标准集在 [eval/golden/subjective.jsonl](eval/golden/subjective.jsonl)（当前 12 道，方案目标是 60–100 道），
 每行是「材料片段 + 题目 + 学生作答 + 逐得分点人工标注」。
 
 验收门槛（`--enforce` 时生效）：逐点准确率 ≥ 90% 且校准单调。
-离线演示引擎达不到这个门槛是预期行为——它只是让闭环可测。
+离线演示引擎达不到这个门槛是预期行为——它在金标准集上的实测是**逐点准确率 42.9%、Brier 0.56**，
+置信度全部挤在一档。这个数字就是「词面重合不能替代校准过的判定模型」的量化证据，
+也是本项目默认接入 Jev 的原因。
 
 ## 目录结构
 
 ```
-src/lib/engine/       判定引擎：typesafe(Jev) / llm-judge(对比基线) / lexical(离线演示)
-src/lib/generator/    出题：LLM 出题器、离线出题器、落地校验（schema/锚点/去重）
-src/lib/grading/      判分：客观题确定性判分、主观题逐点合成与门控
-src/lib/db/           Drizzle schema、Store 接口、Postgres 与内存两种实现
-src/lib/services/     业务服务层（材料、大纲、试卷、作答判定、结果、错题、BYOK）
-src/app/api/          Route Handlers：HTTP 契约与测试入口
-src/app/              页面：落地页/材料/大纲确认/作答/判定报告/错题本/设置
-scripts/eval-judge.ts 判定层评测
+SKILL.md               Agent Skill 入口（给 Codex / Claude Code 用）
+scripts/study.ts       命令行：verify / grade / render / answer-template / demo
+scripts/eval-judge.ts  判定层评测（金标准集 + 校准分桶）
+src/lib/engine/        判定引擎：typesafe(Jev) / llm-judge(对比基线) / lexical(离线演示)
+src/lib/generator/     出题：LLM 出题器、离线出题器、落地校验（schema/锚点/去重）
+src/lib/grading/       判分：客观题确定性判分、主观题逐点合成与门控
+src/lib/coverage.ts    覆盖率校验（哪些材料要点没被出题覆盖）
+src/lib/provenance.ts  溯源契约（材料事实 vs 模型补充）
+src/lib/security/      不可信材料扫描、分隔符转义、HTML 转义
+src/lib/report.ts      离线 HTML / Markdown 报告渲染
+src/lib/db/            Drizzle schema、Store 接口、Postgres 与内存两种实现
+src/lib/services/      业务服务层（材料、大纲、试卷、作答判定、结果、错题、BYOK）
+src/app/api/           Route Handlers：HTTP 契约与测试入口
+src/app/               页面：落地页/材料/大纲确认/作答/判定报告/错题本/设置
+docs/demo/             可直接打开的示例报告（由 scripts/study.ts 生成）
+examples/              示例材料
 ```
+
+## 安全与隐私
+
+上传的材料一律当作**不可信数据**：材料里的指令不会被执行，代码侧会扫描提示注入、角色劫持、
+脚本注入等模式；「材料事实必须可定位」这条契约保证伪造内容无法伪装成原文。
+密钥使用 AES-256-GCM 加密存储、只在该用户请求中使用；材料默认私有，删除会级联清除派生数据。
+详见 [SECURITY.md](SECURITY.md)。
 
 ## 已知取舍
 
 1. **认证**：MVP 使用「邀请码 + 邮箱 + 签名 Cookie」，接口抽象在
    [src/lib/auth/session.ts](src/lib/auth/session.ts) 的 `AuthProvider`。
    换成 Supabase Auth（邮箱 OTP）+ RLS 只需要替换该 provider，业务与路由不动。
-2. **材料范围**：只支持粘贴纯文本/Markdown，不做 PDF 解析、OCR 与网页抓取。
+2. **材料范围**：Web 版只支持粘贴纯文本/Markdown，不做 PDF 解析、OCR 与网页抓取。
 3. **不做数学与代码判分**：计算类题目需要执行器/符号等价检查，Jev 只用于语义要点判定。
 4. **结果页的解释**：Jev 不给理由，所以「为什么」只能来自 rubric 点本身
    （哪些点命中、哪些没命中、扣分项概率多少），不展示模型解释。
-5. **待复核不自动复审**：按方案约定，低置信度题目只标记、不计入掌握度，不自动调用更强的模型改判。
+5. **待复核不自动复审**：低置信度题目只标记、不计入掌握度，不自动调用更强的模型改判。
+6. **覆盖率不等于正确性**：覆盖率只说明「要点有没有被出题」，不说明题目本身出得好不好。
 
 ## 后续路线
 
 - 把金标准集扩到 60–100 题并按知识点分层，接 CI 做回归；
-- 接入 PDF/DOCX 解析与图片 OCR（引入视觉模型）；
+- 接入 PDF/DOCX 解析与图片 OCR（引入视觉模型），并沿用「未核验区间」标记；
 - Supabase Auth + RLS 的真实部署；
-- 主观题低置信度自动交给更强模型复审（作为可选路径，仍保留分数区间）；
+- 错题驱动的补题：覆盖率低的材料自动补出题目；
 - 自托管决策模型（Kev 等开源复刻）作为 `DecisionEngine` 的第三种实现，摆脱对 TypeSafe 的依赖。
+
+## 许可
+
+[MIT](LICENSE) © 2026 Simon · 更多内容见 [www.simon-zj.top](https://www.simon-zj.top/tech/tools/jev-exam/)

@@ -8,6 +8,7 @@ import type {
   QuestionResponse,
 } from "@/lib/generator/provider";
 import type { ChatProvider } from "@/lib/llm/provider";
+import { scanMaterial, UNTRUSTED_MATERIAL_NOTICE } from "@/lib/security/untrusted";
 import { truncate } from "@/lib/text";
 import type { GeneratedQuestion, Outline, Topic } from "@/lib/types";
 
@@ -20,6 +21,7 @@ export class GenerationError extends Error {
 
 export const OUTLINE_SYSTEM_PROMPT = [
   "你是备考题目设计专家。任务：把用户提供的学习材料切分成若干知识点。",
+  UNTRUSTED_MATERIAL_NOTICE,
   "要求：",
   "1. 只依据材料本身，不得引入材料之外的知识。",
   "2. 每个知识点的 source_spans 必须是材料中逐字出现的原文片段（可直接在材料中检索到）。",
@@ -29,6 +31,7 @@ export const OUTLINE_SYSTEM_PROMPT = [
 
 export const QUESTIONS_SYSTEM_PROMPT = [
   "你是备考出题专家。任务：依据给定的知识点与材料原文，生成一套可自动判分的题目。",
+  UNTRUSTED_MATERIAL_NOTICE,
   "题型与字段（严格遵循）：",
   '- mcq（单项选择）：{"id","topic_id","type":"mcq","stem","options":[4 个互不相同的选项],"correct_index":0-3,"difficulty":"easy|medium|hard","source_anchor":"材料原文片段"}',
   '- true_false（判断）：{"id","topic_id","type":"true_false","stem","answer":true|false,"difficulty","source_anchor"}',
@@ -58,11 +61,12 @@ export class LlmGenerationProvider implements GenerationProvider {
   }
 
   async generateOutline(request: OutlineRequest): Promise<Outline> {
+    const safeMaterial = scanMaterial(request.materialText).promptText;
     const user = [
       `请把下面材料切分为 ${request.topicCount} 个知识点。`,
       "材料：",
       "<<<",
-      request.materialText,
+      safeMaterial,
       ">>>",
     ].join("\n");
 
@@ -109,7 +113,7 @@ export class LlmGenerationProvider implements GenerationProvider {
       if (remaining <= 0) break;
 
       const user = buildQuestionPrompt({
-        material: request.materialText,
+        material: scanMaterial(request.materialText).promptText,
         topics: outline,
         mix: request.mix,
         count: remaining,

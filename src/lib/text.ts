@@ -56,3 +56,16 @@ export function estimateTokens(input: string): number {
 export function truncate(input: string, max: number): string {
   return input.length <= max ? input : `${input.slice(0, max)}…`;
 }
+
+/**
+ * 按中英文句末标点切句，忽略过短的碎片。
+ * 既用于离线出题，也用于覆盖率校验里的「材料要点」单位。
+ */
+export function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[。！？!?；;])\s*|\n+/)
+    .map((sentence) => sentence.trim())
+    // Markdown 标题不是知识要点，排除掉，避免它变成知识点或覆盖单位
+    .filter((sentence) => !/^#{1,6}\s/.test(sentence))
+    .filter((sentence) => sentence.length >= 8);
+}

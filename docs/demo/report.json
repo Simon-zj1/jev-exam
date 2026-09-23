@@ -1,0 +1,502 @@
+{
+  "version": 1,
+  "app": "Jev 备考",
+  "generatedAt": "2026-09-24T00:00:00.000Z",
+  "material": {
+    "title": "Agent 面试八股 · 检索与 Agent",
+    "charCount": 520,
+    "unitCount": 14,
+    "hazards": []
+  },
+  "exam": {
+    "title": "Agent 面试八股 · 检索与 Agent（示例试卷）",
+    "generator": "offline-heuristic（离线启发式出题器，仅用于演示）",
+    "questionCount": 7
+  },
+  "engine": {
+    "id": "lexical-demo",
+    "model": "lexical-demo-v1",
+    "mode": "offline"
+  },
+  "summary": {
+    "scorePercent": 77,
+    "needsReviewCount": 0,
+    "objectiveCorrect": 5,
+    "objectiveTotal": 6
+  },
+  "coverage": {
+    "unitCount": 14,
+    "coveredCount": 9,
+    "coverageRatio": 0.6428571428571429,
+    "units": [
+      {
+        "index": 0,
+        "text": "检索是 RAG 的第一阶段，决定模型能看到什么证据。",
+        "coveredBy": [
+          "q_b2779247f4",
+          "q_b2779247f4"
+        ]
+      },
+      {
+        "index": 1,
+        "text": "向量检索：把文本编码成向量，用相似度做语义召回。",
+        "coveredBy": [
+          "q_70e4efd1fd",
+          "q_b2779247f4"
+        ]
+      },
+      {
+        "index": 2,
+        "text": "关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。",
+        "coveredBy": [
+          "q_b2779247f4"
+        ]
+      },
+      {
+        "index": 3,
+        "text": "重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。",
+        "coveredBy": [
+          "q_b2779247f4"
+        ]
+      },
+      {
+        "index": 4,
+        "text": "分块：块太大引入噪声，太小割裂语义，通常按语义边界切分并保留重叠。",
+        "coveredBy": []
+      },
+      {
+        "index": 5,
+        "text": "Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。",
+        "coveredBy": [
+          "q_fe3c3d98e3"
+        ]
+      },
+      {
+        "index": 6,
+        "text": "ReAct：把推理与行动交替进行，观察工具结果后再决定下一步。",
+        "coveredBy": [
+          "q_669d506887"
+        ]
+      },
+      {
+        "index": 7,
+        "text": "工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。",
+        "coveredBy": [
+          "q_e9c6297f42"
+        ]
+      },
+      {
+        "index": 8,
+        "text": "记忆：短期记忆放在对话上下文，长期记忆落到向量库，按相关性检索后再注入。",
+        "coveredBy": []
+      },
+      {
+        "index": 9,
+        "text": "规划：把复杂目标拆成子任务，配合执行后的反思，而不是一次性长篇推理。",
+        "coveredBy": []
+      },
+      {
+        "index": 10,
+        "text": "评测：离线用标注集，线上看人工反馈与失败案例回流，没有评测就没有迭代依据。",
+        "coveredBy": []
+      },
+      {
+        "index": 11,
+        "text": "幻觉：模型生成与事实不符的内容，可用检索约束、工具校验和置信度门控缓解。",
+        "coveredBy": []
+      },
+      {
+        "index": 12,
+        "text": "微调与 RAG：RAG 改知识，微调改行为与格式，二者解决的不是同一个问题。",
+        "coveredBy": [
+          "q_484c395430"
+        ]
+      },
+      {
+        "index": 13,
+        "text": "上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。",
+        "coveredBy": [
+          "q_1b70e8a516"
+        ]
+      }
+    ],
+    "uncovered": [
+      {
+        "index": 4,
+        "text": "分块：块太大引入噪声，太小割裂语义，通常按语义边界切分并保留重叠。"
+      },
+      {
+        "index": 8,
+        "text": "记忆：短期记忆放在对话上下文，长期记忆落到向量库，按相关性检索后再注入。"
+      },
+      {
+        "index": 9,
+        "text": "规划：把复杂目标拆成子任务，配合执行后的反思，而不是一次性长篇推理。"
+      },
+      {
+        "index": 10,
+        "text": "评测：离线用标注集，线上看人工反馈与失败案例回流，没有评测就没有迭代依据。"
+      },
+      {
+        "index": 11,
+        "text": "幻觉：模型生成与事实不符的内容，可用检索约束、工具校验和置信度门控缓解。"
+      }
+    ],
+    "anchorFailures": [],
+    "topicCoverage": [
+      {
+        "topicId": "t1",
+        "title": "检索是 RAG 的第一阶段，决定模型能看到什么证据",
+        "questionCount": 3,
+        "covered": true
+      },
+      {
+        "topicId": "t2",
+        "title": "Agent：由模型驱动、可以调用工具并根据结果继续行动的…",
+        "questionCount": 2,
+        "covered": true
+      },
+      {
+        "topicId": "t3",
+        "title": "评测：离线用标注集，线上看人工反馈与失败案例回流，没有评…",
+        "questionCount": 2,
+        "covered": true
+      }
+    ]
+  },
+  "provenanceViolations": [],
+  "questions": [
+    {
+      "position": 1,
+      "id": "q_70e4efd1fd",
+      "type": "mcq",
+      "topicId": "t1",
+      "topicTitle": "检索是 RAG 的第一阶段，决定模型能看到什么证据",
+      "stem": "关于「检索是 RAG 的第一阶段，决定模型能看到什么证…」，下列哪一项与材料中的描述一致？",
+      "options": [
+        "向量检索：把文本编码成向量，用相似度做语义召回。",
+        "Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。",
+        "ReAct：把推理与行动交替进行，观察工具结果后再决定下一步。",
+        "工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。"
+      ],
+      "sourceAnchor": "向量检索：把文本编码成向量，用相似度做语义召回。",
+      "sourceLocation": {
+        "found": true,
+        "unitIndex": 1,
+        "unitCount": 14,
+        "charRange": [
+          44,
+          65
+        ]
+      },
+      "answer": "B. Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。",
+      "referenceAnswer": "A. 向量检索：把文本编码成向量，用相似度做语义召回。",
+      "rubric": [],
+      "explanation": "正确选项直接取自材料原文，其余选项来自其它知识点。",
+      "judgment": {
+        "method": "exact",
+        "score": 0,
+        "scorePercent": 0,
+        "confidence": 1,
+        "needsReview": false,
+        "reviewReasons": [],
+        "scoreRange": null,
+        "points": [],
+        "penalties": [],
+        "engineId": "deterministic",
+        "model": "deterministic",
+        "latencyMs": 0
+      }
+    },
+    {
+      "position": 2,
+      "id": "q_e9c6297f42",
+      "type": "mcq",
+      "topicId": "t2",
+      "topicTitle": "Agent：由模型驱动、可以调用工具并根据结果继续行动的…",
+      "stem": "关于「Agent：由模型驱动、可以调用工具并根据结果继…」，下列哪一项与材料中的描述一致？",
+      "options": [
+        "工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。",
+        "检索是 RAG 的第一阶段，决定模型能看到什么证据。",
+        "向量检索：把文本编码成向量，用相似度做语义召回。",
+        "关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。"
+      ],
+      "sourceAnchor": "工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。",
+      "sourceLocation": {
+        "found": true,
+        "unitIndex": 7,
+        "unitCount": 14,
+        "charRange": [
+          206,
+          242
+        ]
+      },
+      "answer": "A. 工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。",
+      "referenceAnswer": "A. 工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。",
+      "rubric": [],
+      "explanation": "正确选项直接取自材料原文，其余选项来自其它知识点。",
+      "judgment": {
+        "method": "exact",
+        "score": 1,
+        "scorePercent": 100,
+        "confidence": 1,
+        "needsReview": false,
+        "reviewReasons": [],
+        "scoreRange": null,
+        "points": [],
+        "penalties": [],
+        "engineId": "deterministic",
+        "model": "deterministic",
+        "latencyMs": 0
+      }
+    },
+    {
+      "position": 3,
+      "id": "q_1b70e8a516",
+      "type": "mcq",
+      "topicId": "t3",
+      "topicTitle": "评测：离线用标注集，线上看人工反馈与失败案例回流，没有评…",
+      "stem": "关于「评测：离线用标注集，线上看人工反馈与失败案例回流…」，下列哪一项与材料中的描述一致？",
+      "options": [
+        "上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。",
+        "检索是 RAG 的第一阶段，决定模型能看到什么证据。",
+        "向量检索：把文本编码成向量，用相似度做语义召回。",
+        "关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。"
+      ],
+      "sourceAnchor": "上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。",
+      "sourceLocation": {
+        "found": true,
+        "unitIndex": 13,
+        "unitCount": 14,
+        "charRange": [
+          401,
+          431
+        ]
+      },
+      "answer": "A. 上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。",
+      "referenceAnswer": "A. 上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。",
+      "rubric": [],
+      "explanation": "正确选项直接取自材料原文，其余选项来自其它知识点。",
+      "judgment": {
+        "method": "exact",
+        "score": 1,
+        "scorePercent": 100,
+        "confidence": 1,
+        "needsReview": false,
+        "reviewReasons": [],
+        "scoreRange": null,
+        "points": [],
+        "penalties": [],
+        "engineId": "deterministic",
+        "model": "deterministic",
+        "latencyMs": 0
+      }
+    },
+    {
+      "position": 4,
+      "id": "q_fe3c3d98e3",
+      "type": "true_false",
+      "topicId": "t1",
+      "topicTitle": "检索是 RAG 的第一阶段，决定模型能看到什么证据",
+      "stem": "判断：Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。",
+      "options": null,
+      "sourceAnchor": "Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。",
+      "sourceLocation": {
+        "found": true,
+        "unitIndex": 5,
+        "unitCount": 14,
+        "charRange": [
+          148,
+          178
+        ]
+      },
+      "answer": "错误",
+      "referenceAnswer": "错误",
+      "rubric": [],
+      "explanation": "该表述来自材料中的其它知识点，与本题主题不符。",
+      "judgment": {
+        "method": "exact",
+        "score": 1,
+        "scorePercent": 100,
+        "confidence": 1,
+        "needsReview": false,
+        "reviewReasons": [],
+        "scoreRange": null,
+        "points": [],
+        "penalties": [],
+        "engineId": "deterministic",
+        "model": "deterministic",
+        "latencyMs": 0
+      }
+    },
+    {
+      "position": 5,
+      "id": "q_669d506887",
+      "type": "true_false",
+      "topicId": "t2",
+      "topicTitle": "Agent：由模型驱动、可以调用工具并根据结果继续行动的…",
+      "stem": "判断：ReAct：把推理与行动交替进行，观察工具结果后再决定下一步。",
+      "options": null,
+      "sourceAnchor": "ReAct：把推理与行动交替进行，观察工具结果后再决定下一步。",
+      "sourceLocation": {
+        "found": true,
+        "unitIndex": 6,
+        "unitCount": 14,
+        "charRange": [
+          178,
+          206
+        ]
+      },
+      "answer": "正确",
+      "referenceAnswer": "正确",
+      "rubric": [],
+      "explanation": "该表述与材料一致。",
+      "judgment": {
+        "method": "exact",
+        "score": 1,
+        "scorePercent": 100,
+        "confidence": 1,
+        "needsReview": false,
+        "reviewReasons": [],
+        "scoreRange": null,
+        "points": [],
+        "penalties": [],
+        "engineId": "deterministic",
+        "model": "deterministic",
+        "latencyMs": 0
+      }
+    },
+    {
+      "position": 6,
+      "id": "q_484c395430",
+      "type": "cloze",
+      "topicId": "t3",
+      "topicTitle": "评测：离线用标注集，线上看人工反馈与失败案例回流，没有评…",
+      "stem": "请补全材料中的关键表述。",
+      "options": null,
+      "sourceAnchor": "微调与 RAG：RAG 改知识，微调改行为与格式，二者解决的不是同一个问题。",
+      "sourceLocation": {
+        "found": true,
+        "unitIndex": 12,
+        "unitCount": 14,
+        "charRange": [
+          369,
+          401
+        ]
+      },
+      "answer": "微调改行为与格式",
+      "referenceAnswer": "微调改行为与格式",
+      "rubric": [],
+      "explanation": null,
+      "judgment": {
+        "method": "exact",
+        "score": 1,
+        "scorePercent": 100,
+        "confidence": 1,
+        "needsReview": false,
+        "reviewReasons": [],
+        "scoreRange": null,
+        "points": [],
+        "penalties": [],
+        "engineId": "deterministic",
+        "model": "deterministic",
+        "latencyMs": 0
+      }
+    },
+    {
+      "position": 7,
+      "id": "q_b2779247f4",
+      "type": "short_answer",
+      "topicId": "t1",
+      "topicTitle": "检索是 RAG 的第一阶段，决定模型能看到什么证据",
+      "stem": "请根据材料说明「检索是 RAG 的第一阶段，决定模型能看到什么证…」的要点。",
+      "options": null,
+      "sourceAnchor": "检索是 RAG 的第一阶段，决定模型能看到什么证据。",
+      "sourceLocation": {
+        "found": true,
+        "unitIndex": 0,
+        "unitCount": 14,
+        "charRange": [
+          22,
+          44
+        ]
+      },
+      "answer": "检索是 RAG 的第一阶段，决定模型能看到什么证据。 向量检索：把文本编码成向量，用相似度做语义召回。",
+      "referenceAnswer": "检索是 RAG 的第一阶段，决定模型能看到什么证据。 向量检索：把文本编码成向量，用相似度做语义召回。 关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。 重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。",
+      "rubric": [
+        {
+          "point_id": "p1",
+          "statement": "答案提到该要点：检索是 RAG 的第一阶段，决定模型能看到什么证据。",
+          "weight": 1,
+          "evidence_span": "检索是 RAG 的第一阶段，决定模型能看到什么证据。"
+        },
+        {
+          "point_id": "p2",
+          "statement": "答案提到该要点：向量检索：把文本编码成向量，用相似度做语义召回。",
+          "weight": 1,
+          "evidence_span": "向量检索：把文本编码成向量，用相似度做语义召回。"
+        },
+        {
+          "point_id": "p3",
+          "statement": "答案提到该要点：关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。",
+          "weight": 1,
+          "evidence_span": "关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。"
+        },
+        {
+          "point_id": "p4",
+          "statement": "答案提到该要点：重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。",
+          "weight": 1,
+          "evidence_span": "重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。"
+        }
+      ],
+      "explanation": "每个要点对应一条判定问题，按权重合成得分。",
+      "judgment": {
+        "method": "rubric",
+        "score": 0.37622500000000003,
+        "scorePercent": 38,
+        "confidence": 0.5893999999999999,
+        "needsReview": false,
+        "reviewReasons": [],
+        "scoreRange": null,
+        "points": [
+          {
+            "point_id": "p1",
+            "statement": "答案提到该要点：检索是 RAG 的第一阶段，决定模型能看到什么证据。",
+            "weight": 1,
+            "probability": 0.7947,
+            "strength": 0.5893999999999999,
+            "awarded": true
+          },
+          {
+            "point_id": "p2",
+            "statement": "答案提到该要点：向量检索：把文本编码成向量，用相似度做语义召回。",
+            "weight": 1,
+            "probability": 0.8102,
+            "strength": 0.6204000000000001,
+            "awarded": true
+          },
+          {
+            "point_id": "p3",
+            "statement": "答案提到该要点：关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。",
+            "weight": 1,
+            "probability": 0.01,
+            "strength": 0.98,
+            "awarded": false
+          },
+          {
+            "point_id": "p4",
+            "statement": "答案提到该要点：重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。",
+            "weight": 1,
+            "probability": 0.01,
+            "strength": 0.98,
+            "awarded": false
+          }
+        ],
+        "penalties": [],
+        "engineId": "lexical-demo",
+        "model": "lexical-demo-v1",
+        "latencyMs": 1
+      }
+    }
+  ]
+}

@@ -14,6 +14,7 @@ import { NotFoundError } from "@/lib/errors";
 import { getBlueprintForMaterial } from "@/lib/services/generation";
 import { getMaterialForUser } from "@/lib/services/materials";
 import { listExamSummaries } from "@/lib/services/results";
+import { scanMaterial, summarizeHazards } from "@/lib/security/untrusted";
 import { truncate } from "@/lib/text";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ export default async function MaterialDetailPage({
 
   const blueprint = await getBlueprintForMaterial(material).catch(() => null);
   const exams = (await listExamSummaries(user)).filter((summary) => summary.exam.materialId === id);
+  const scan = scanMaterial(material.rawText);
 
   return (
     <>
@@ -50,6 +52,23 @@ export default async function MaterialDetailPage({
           {material.rawText.length} 字符 · 约 {material.tokenCount} tokens · 上传于{" "}
           {new Date(material.createdAt).toLocaleString("zh-CN")}
         </p>
+
+        {scan.hazards.length > 0 ? (
+          <div className="banner banner--warn">
+            <strong>安全提示：{summarizeHazards(scan.hazards)}。</strong>
+            <div className="small" style={{ marginTop: 6 }}>
+              材料一律当作不可信数据：其中的指令、角色设定与要求都不会被执行，只会作为被学习的文本；
+              报告里「材料原文」字段还必须能在原文中逐字定位。
+            </div>
+            <ul className="small" style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+              {scan.hazards.slice(0, 5).map((hazard) => (
+                <li key={hazard.id}>
+                  {hazard.label}（{hazard.severity === "high" ? "高风险" : "中风险"}）：{hazard.excerpt}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <section className="card">
           <h2>材料原文（预览）</h2>

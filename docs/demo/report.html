@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agent 面试八股 · 检索与 Agent · 判定报告</title>
+<style>
+:root{--bg:#f5f6f8;--surface:#fff;--text:#15181e;--muted:#5c6472;--line:#e3e6eb;--brand:#2f5bff;--ok:#12805c;--warn:#9a6100;--err:#b42318}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--surface:#171a20;--text:#e9ecf1;--muted:#9aa3b2;--line:#262b34;--brand:#7f9dff;--ok:#4ade9f;--warn:#e2b34a;--err:#ff8b7d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:26px;margin:0 0 6px}
+h2{font-size:19px;margin:32px 0 12px}
+h4{font-size:13px;color:var(--muted);margin:0 0 4px;font-weight:600}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
+.score{font-size:34px;font-weight:700;line-height:1.1}
+.muted{color:var(--muted)}
+.meta{color:var(--muted);font-size:12px;margin-left:auto}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--brand);border:1px solid color-mix(in srgb,var(--brand) 30%,transparent)}
+.badge--ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 30%,transparent)}
+.badge--warn{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
+.badge--err{background:color-mix(in srgb,var(--err) 14%,transparent);color:var(--err);border-color:color-mix(in srgb,var(--err) 30%,transparent)}
+.tag{font-size:11px;padding:1px 7px;border-radius:6px;border:1px solid var(--line);color:var(--muted);margin-left:4px;vertical-align:middle}
+.tag--material{border-color:color-mix(in srgb,var(--ok) 40%,transparent);color:var(--ok)}
+.tag--model{border-color:color-mix(in srgb,var(--brand) 40%,transparent);color:var(--brand)}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+.q__head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.q__index{font-weight:700;color:var(--brand)}
+.q__stem{margin:0 0 10px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px}
+caption{caption-side:top;text-align:left;color:var(--muted);font-size:12.5px;padding-bottom:6px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:12.5px}
+.num{font-variant-numeric:tabular-nums}
+.review{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 28%,transparent);color:var(--warn);padding:8px 12px;border-radius:10px;font-size:13px;margin:12px 0 0}
+.penalty{background:color-mix(in srgb,var(--err) 10%,transparent);border:1px solid color-mix(in srgb,var(--err) 26%,transparent);color:var(--err);padding:8px 12px;border-radius:10px;font-size:13px}
+.explanation{color:var(--muted);font-size:13px}
+details.source{margin-top:12px;font-size:13px}
+details.source summary{cursor:pointer;color:var(--muted)}
+blockquote{margin:8px 0;padding:8px 12px;border-left:3px solid var(--line);color:var(--muted)}
+.rubric-ref{margin:8px 0 0;padding-left:18px;color:var(--muted)}
+.uncovered{margin:8px 0 0;padding-left:18px;color:var(--warn);font-size:13.5px}
+.foot{margin-top:28px;color:var(--muted);font-size:12.5px}
+@media print{.q,.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Agent 面试八股 · 检索与 Agent · 判定报告</h1>
+  <p class="muted">由 Jev 备考 生成 · 2026-09-24T00:00:00.000Z · 判定引擎 lexical-demo / lexical-demo-v1（offline）</p>
+
+  <section class="card summary">
+    <div><div class="muted">总分</div><div class="score">77<span class="muted" style="font-size:14px"> / 100</span></div></div>
+    <div><div class="muted">待复核</div><div class="score">0</div></div>
+    <div><div class="muted">客观题正确</div><div class="score">5<span class="muted" style="font-size:14px"> / 6</span></div></div>
+  </section>
+
+  <section class="card">
+    <h2 style="margin-top:0">材料与覆盖</h2>
+    <p>Agent 面试八股 · 检索与 Agent · 520 字符 · 14 个要点</p>
+    <p>材料要点覆盖 9/14（64%）</p>
+    <p class="muted">未覆盖的材料要点（如实列出，不代表题目有错）：</p>
+    <ul class="uncovered"><li>第 5 句：分块：块太大引入噪声，太小割裂语义，通常按语义边界切分并保留重叠。</li><li>第 9 句：记忆：短期记忆放在对话上下文，长期记忆落到向量库，按相关性检索后再注入。</li><li>第 10 句：规划：把复杂目标拆成子任务，配合执行后的反思，而不是一次性长篇推理。</li><li>第 11 句：评测：离线用标注集，线上看人工反馈与失败案例回流，没有评测就没有迭代依据。</li><li>第 12 句：幻觉：模型生成与事实不符的内容，可用检索约束、工具校验和置信度门控缓解。</li></ul>
+    <p class="muted">溯源契约：所有「材料原文」字段均可在原文中定位。</p>
+  </section>
+
+  <h2>逐题判定</h2>
+  <section class="q">
+      <header class="q__head">
+        <span class="q__index">1</span>
+        <span class="badge">检索是 RAG 的第一阶段，决定模型能看到什么证据</span>
+        <span class="badge badge--err">0 分</span>
+        <span class="meta">deterministic · deterministic</span>
+      </header>
+      <p class="q__stem">关于「检索是 RAG 的第一阶段，决定模型能看到什么证…」，下列哪一项与材料中的描述一致？</p>
+      <div class="grid2">
+        <div><h4>你的作答</h4><p>B. Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。</p></div>
+        <div><h4>参考答案 <span class="tag tag--model">模型补充</span></h4><p>A. 向量检索：把文本编码成向量，用相似度做语义召回。</p></div>
+      </div>
+      
+      
+      
+      <p class="explanation"><span class="tag tag--model">模型补充</span> 正确选项直接取自材料原文，其余选项来自其它知识点。</p>
+      <details class="source">
+        <summary>原文出处 · 第 2 句 / 共 14 句 <span class="tag tag--material">材料原文</span></summary>
+        <blockquote>向量检索：把文本编码成向量，用相似度做语义召回。</blockquote>
+        
+      </details>
+    </section>
+<section class="q">
+      <header class="q__head">
+        <span class="q__index">2</span>
+        <span class="badge">Agent：由模型驱动、可以调用工具并根据结果继续行动的…</span>
+        <span class="badge badge--ok">100 分</span>
+        <span class="meta">deterministic · deterministic</span>
+      </header>
+      <p class="q__stem">关于「Agent：由模型驱动、可以调用工具并根据结果继…」，下列哪一项与材料中的描述一致？</p>
+      <div class="grid2">
+        <div><h4>你的作答</h4><p>A. 工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。</p></div>
+        <div><h4>参考答案 <span class="tag tag--model">模型补充</span></h4><p>A. 工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。</p></div>
+      </div>
+      
+      
+      
+      <p class="explanation"><span class="tag tag--model">模型补充</span> 正确选项直接取自材料原文，其余选项来自其它知识点。</p>
+      <details class="source">
+        <summary>原文出处 · 第 8 句 / 共 14 句 <span class="tag tag--material">材料原文</span></summary>
+        <blockquote>工具调用：把外部能力以函数签名暴露给模型，模型输出结构化参数，由代码执行并回传。</blockquote>
+        
+      </details>
+    </section>
+<section class="q">
+      <header class="q__head">
+        <span class="q__index">3</span>
+        <span class="badge">评测：离线用标注集，线上看人工反馈与失败案例回流，没有评…</span>
+        <span class="badge badge--ok">100 分</span>
+        <span class="meta">deterministic · deterministic</span>
+      </header>
+      <p class="q__stem">关于「评测：离线用标注集，线上看人工反馈与失败案例回流…」，下列哪一项与材料中的描述一致？</p>
+      <div class="grid2">
+        <div><h4>你的作答</h4><p>A. 上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。</p></div>
+        <div><h4>参考答案 <span class="tag tag--model">模型补充</span></h4><p>A. 上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。</p></div>
+      </div>
+      
+      
+      
+      <p class="explanation"><span class="tag tag--model">模型补充</span> 正确选项直接取自材料原文，其余选项来自其它知识点。</p>
+      <details class="source">
+        <summary>原文出处 · 第 14 句 / 共 14 句 <span class="tag tag--material">材料原文</span></summary>
+        <blockquote>上下文工程：控制进入模型的信息量与顺序，稳定规则在前，易变内容在后。</blockquote>
+        
+      </details>
+    </section>
+<section class="q">
+      <header class="q__head">
+        <span class="q__index">4</span>
+        <span class="badge">检索是 RAG 的第一阶段，决定模型能看到什么证据</span>
+        <span class="badge badge--ok">100 分</span>
+        <span class="meta">deterministic · deterministic</span>
+      </header>
+      <p class="q__stem">判断：Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。</p>
+      <div class="grid2">
+        <div><h4>你的作答</h4><p>错误</p></div>
+        <div><h4>参考答案 <span class="tag tag--model">模型补充</span></h4><p>错误</p></div>
+      </div>
+      
+      
+      
+      <p class="explanation"><span class="tag tag--model">模型补充</span> 该表述来自材料中的其它知识点，与本题主题不符。</p>
+      <details class="source">
+        <summary>原文出处 · 第 6 句 / 共 14 句 <span class="tag tag--material">材料原文</span></summary>
+        <blockquote>Agent：由模型驱动、可以调用工具并根据结果继续行动的循环系统。</blockquote>
+        
+      </details>
+    </section>
+<section class="q">
+      <header class="q__head">
+        <span class="q__index">5</span>
+        <span class="badge">Agent：由模型驱动、可以调用工具并根据结果继续行动的…</span>
+        <span class="badge badge--ok">100 分</span>
+        <span class="meta">deterministic · deterministic</span>
+      </header>
+      <p class="q__stem">判断：ReAct：把推理与行动交替进行，观察工具结果后再决定下一步。</p>
+      <div class="grid2">
+        <div><h4>你的作答</h4><p>正确</p></div>
+        <div><h4>参考答案 <span class="tag tag--model">模型补充</span></h4><p>正确</p></div>
+      </div>
+      
+      
+      
+      <p class="explanation"><span class="tag tag--model">模型补充</span> 该表述与材料一致。</p>
+      <details class="source">
+        <summary>原文出处 · 第 7 句 / 共 14 句 <span class="tag tag--material">材料原文</span></summary>
+        <blockquote>ReAct：把推理与行动交替进行，观察工具结果后再决定下一步。</blockquote>
+        
+      </details>
+    </section>
+<section class="q">
+      <header class="q__head">
+        <span class="q__index">6</span>
+        <span class="badge">评测：离线用标注集，线上看人工反馈与失败案例回流，没有评…</span>
+        <span class="badge badge--ok">100 分</span>
+        <span class="meta">deterministic · deterministic</span>
+      </header>
+      <p class="q__stem">请补全材料中的关键表述。</p>
+      <div class="grid2">
+        <div><h4>你的作答</h4><p>微调改行为与格式</p></div>
+        <div><h4>参考答案 <span class="tag tag--model">模型补充</span></h4><p>微调改行为与格式</p></div>
+      </div>
+      
+      
+      
+      
+      <details class="source">
+        <summary>原文出处 · 第 13 句 / 共 14 句 <span class="tag tag--material">材料原文</span></summary>
+        <blockquote>微调与 RAG：RAG 改知识，微调改行为与格式，二者解决的不是同一个问题。</blockquote>
+        
+      </details>
+    </section>
+<section class="q">
+      <header class="q__head">
+        <span class="q__index">7</span>
+        <span class="badge">检索是 RAG 的第一阶段，决定模型能看到什么证据</span>
+        <span class="badge badge--err">38 分</span>
+        <span class="meta">lexical-demo · lexical-demo-v1</span>
+      </header>
+      <p class="q__stem">请根据材料说明「检索是 RAG 的第一阶段，决定模型能看到什么证…」的要点。</p>
+      <div class="grid2">
+        <div><h4>你的作答</h4><p>检索是 RAG 的第一阶段，决定模型能看到什么证据。 向量检索：把文本编码成向量，用相似度做语义召回。</p></div>
+        <div><h4>参考答案 <span class="tag tag--model">模型补充</span></h4><p>检索是 RAG 的第一阶段，决定模型能看到什么证据。 向量检索：把文本编码成向量，用相似度做语义召回。 关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。 重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。</p></div>
+      </div>
+      
+      <table class="points">
+        <caption>逐点判定（这就是“为什么得这个分”的全部依据）</caption>
+        <thead><tr><th>得分点 <span class="tag tag--model">模型补充</span></th><th>权重</th><th>命中概率</th><th>判定强度</th><th>结果</th></tr></thead>
+        <tbody><tr>
+        <td>答案提到该要点：检索是 RAG 的第一阶段，决定模型能看到什么证据。</td>
+        <td class="num">1</td>
+        <td class="num">0.79</td>
+        <td class="num">0.59</td>
+        <td>命中</td>
+      </tr><tr>
+        <td>答案提到该要点：向量检索：把文本编码成向量，用相似度做语义召回。</td>
+        <td class="num">1</td>
+        <td class="num">0.81</td>
+        <td class="num">0.62</td>
+        <td>命中</td>
+      </tr><tr>
+        <td>答案提到该要点：关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。</td>
+        <td class="num">1</td>
+        <td class="num">0.01</td>
+        <td class="num">0.98</td>
+        <td>未命中</td>
+      </tr><tr>
+        <td>答案提到该要点：重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。</td>
+        <td class="num">1</td>
+        <td class="num">0.01</td>
+        <td class="num">0.98</td>
+        <td>未命中</td>
+      </tr></tbody>
+      </table>
+      
+      <p class="explanation"><span class="tag tag--model">模型补充</span> 每个要点对应一条判定问题，按权重合成得分。</p>
+      <details class="source">
+        <summary>原文出处 · 第 1 句 / 共 14 句 <span class="tag tag--material">材料原文</span></summary>
+        <blockquote>检索是 RAG 的第一阶段，决定模型能看到什么证据。</blockquote>
+        <ul class="rubric-ref"><li><span class="tag tag--material">材料原文</span> 检索是 RAG 的第一阶段，决定模型能看到什么证据。</li><li><span class="tag tag--material">材料原文</span> 向量检索：把文本编码成向量，用相似度做语义召回。</li><li><span class="tag tag--material">材料原文</span> 关键词检索：用 BM25 之类的算法补足专有名词与精确匹配。</li><li><span class="tag tag--material">材料原文</span> 重排：用 Rerank 模型对召回结果重新打分，提升 Top-K 精度。</li></ul>
+      </details>
+    </section>
+
+  <p class="foot">
+    标签说明：<span class="tag tag--material">材料原文</span> 可在材料中逐字定位；
+    <span class="tag tag--model">模型补充</span> 由模型生成，措辞可能与原文不同。
+    待复核题目的判定强度不足，分数仅供参考，也不计入知识点掌握度。
+  </p>
+</div>
+</body>
+</html>

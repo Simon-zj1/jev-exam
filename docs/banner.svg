@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="1200" height="420" role="img" aria-label="Jev 备考：把学习材料变成可自动判分的考试">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1420"/>
+      <stop offset="100%" stop-color="#1b2540"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6f8dff"/>
+      <stop offset="100%" stop-color="#4ad2a5"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#26314d" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="420" fill="url(#bg)"/>
+  <rect width="1200" height="420" fill="url(#grid)" opacity="0.55"/>
+
+  <text x="72" y="132" fill="#eef2ff" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif" font-size="66" font-weight="700">Jev 备考</text>
+  <text x="72" y="182" fill="#9fb0d8" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="21" letter-spacing="1.5">SELF-EXAM FROM YOUR OWN MATERIAL</text>
+  <rect x="72" y="206" width="120" height="4" rx="2" fill="url(#accent)"/>
+  <text x="72" y="252" fill="#c9d4ee" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif" font-size="21">上传学习材料 · 自动出题 · 逐个得分点判定 · 报告可逐条核对</text>
+  <text x="72" y="292" fill="#7f8db3" font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif" font-size="17">材料事实必须能在原文定位；模型补充单独标注；低置信度标记待复核</text>
+
+  <g font-family="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif" font-size="19" fill="#e8eeff">
+    <g>
+      <rect x="72" y="332" width="206" height="56" rx="14" fill="#151d31" stroke="#33406a"/>
+      <text x="96" y="367">材料</text>
+      <text x="176" y="367" fill="#7f8db3" font-size="15">PDF · Markdown · 粘贴</text>
+    </g>
+    <path d="M292 360h34" stroke="#4a5b8f" stroke-width="2"/>
+    <path d="M326 360l-9-5v10z" fill="#4a5b8f"/>
+    <g>
+      <rect x="340" y="332" width="206" height="56" rx="14" fill="#151d31" stroke="#33406a"/>
+      <text x="364" y="367">出题与拆点</text>
+      <text x="500" y="367" fill="#7f8db3" font-size="15">LLM</text>
+    </g>
+    <path d="M560 360h34" stroke="#4a5b8f" stroke-width="2"/>
+    <path d="M594 360l-9-5v10z" fill="#4a5b8f"/>
+    <g>
+      <rect x="608" y="332" width="228" height="56" rx="14" fill="#151d31" stroke="#4ad2a5"/>
+      <text x="632" y="367">逐点判定</text>
+      <text x="748" y="367" fill="#7f8db3" font-size="15">Jev</text>
+    </g>
+    <path d="M850 360h34" stroke="#4a5b8f" stroke-width="2"/>
+    <path d="M884 360l-9-5v10z" fill="#4a5b8f"/>
+    <g>
+      <rect x="898" y="332" width="228" height="56" rx="14" fill="#151d31" stroke="#33406a"/>
+      <text x="922" y="367">报告 / 错题本</text>
+      <text x="1072" y="367" fill="#7f8db3" font-size="15">HTML</text>
+    </g>
+  </g>
+</svg>

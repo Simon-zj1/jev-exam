@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { truncate } from "@/lib/text";
+import { splitSentences, truncate } from "@/lib/text";
 import type {
   GeneratedQuestion,
   Outline,
@@ -162,12 +162,7 @@ export class HeuristicGenerationProvider implements GenerationProvider {
   }
 }
 
-export function splitSentences(text: string): string[] {
-  return text
-    .split(/(?<=[。！？!?；;])\s*|\n+/)
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length >= 8);
-}
+export { splitSentences };
 
 function pickKeyTerm(sentence: string): string | null {
   const latin = sentence.match(/[A-Za-z][A-Za-z0-9_-]{3,}/g) ?? [];
