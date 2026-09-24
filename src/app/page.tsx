@@ -120,6 +120,24 @@ export default async function HomePage() {
           {status.demoMode ? "（离线演示模式，质量不代表真实 Jev）" : ""}
         </p>
 
+        {status.demoMode ? (
+          <div className="banner banner--warn">
+            <div className="row row--between">
+              <div>
+                <strong>还差一步：配置你自己的模型</strong>
+                <div className="small" style={{ marginTop: 4 }}>
+                  现在用的是内置演示引擎，出题与判分都很粗糙。选一家国内可直连的服务商
+                  （DeepSeek / 智谱 GLM / 通义千问 / Kimi），粘贴 Key 后点「测试连接」即可，
+                  两分钟完成，密钥只存在你自己的账号下。
+                </div>
+              </div>
+              <Link className="pill pill--warn" href="/settings">
+                去配置模型 →
+              </Link>
+            </div>
+          </div>
+        ) : null}
+
         <div className="grid grid--2">
           <section className="card">
             <QuotaCard usage={quota.usage} byokActive={Boolean(readByok(user))} />

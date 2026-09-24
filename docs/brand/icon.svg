@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Jev 备考图标：材料要点与三种判定状态">
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4B5BFF"/>
+      <stop offset="100%" stop-color="#17C2A4"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="0.28" cy="0.2" r="0.75">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 底：圆角方，深浅渐变（对应品牌 banner 的靛蓝 → 青绿） -->
+  <rect width="1024" height="1024" rx="232" fill="url(#ground)"/>
+  <rect width="1024" height="1024" rx="232" fill="url(#sheen)"/>
+  <rect x="10" y="10" width="1004" height="1004" rx="224" fill="none" stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="8"/>
+
+  <!-- 三条长短不一的横线＝材料里的要点，长度不一表示内容本身不均等 -->
+  <g fill="#FFFFFF">
+    <rect x="232" y="336" width="312" height="64" rx="32" opacity="0.96"/>
+    <rect x="232" y="480" width="248" height="64" rx="32" opacity="0.82"/>
+    <rect x="232" y="624" width="196" height="64" rx="32" opacity="0.82"/>
+  </g>
+
+  <!-- 右侧三种判定状态：命中（实心）· 未命中（空心）· 待复核（半实心） -->
+  <g>
+    <circle cx="800" cy="368" r="64" fill="#FFFFFF"/>
+    <circle cx="800" cy="512" r="64" fill="none" stroke="#FFFFFF" stroke-width="20"/>
+    <circle cx="800" cy="656" r="64" fill="none" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="18"/>
+    <path d="M800 592 A64 64 0 0 1 800 720 Z" fill="#FFFFFF"/>
+  </g>
+</svg>

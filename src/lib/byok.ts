@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const credentialSchema = z.object({
   apiKey: z.string().min(8),
+  /** 服务商 id（见 src/lib/llm/catalog.ts）；留空则按 Key 形状推断 */
+  provider: z.string().min(1).optional(),
   baseUrl: z.string().url().optional(),
   model: z.string().min(1).optional(),
 });
@@ -30,6 +32,7 @@ export function byokSummary(config: ByokConfig | null) {
     llmConfigured: Boolean(config?.llm?.apiKey),
     judgeModel: config?.judge?.model ?? null,
     llmModel: config?.llm?.model ?? null,
+    llmProvider: config?.llm?.provider ?? null,
     llmBaseUrl: config?.llm?.baseUrl ?? null,
     judgeBaseUrl: config?.judge?.baseUrl ?? null,
   };
