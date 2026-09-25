@@ -157,8 +157,9 @@ npm run eval:judge -- --enforce --consistency 5
 
 The evaluation script reports per-point accuracy, Brier score, calibration buckets, review rate and
 self-consistency, gated at ≥ 90% accuracy with monotonic calibration. The offline demo engine scores
-**42.9% per-point accuracy with a Brier score of 0.56** — that number is the argument for using a calibrated
-decision model instead of word overlap.
+**71.4% per-point accuracy with a Brier score of 0.216** and monotonic calibration, but flags 9 of the 12
+questions as needing review because its judgment strength is too low — that is the argument for using a
+calibrated decision model instead of word overlap.
 
 ## Security
 
