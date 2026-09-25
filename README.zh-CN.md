@@ -40,6 +40,8 @@
 
 ![错题本与知识点掌握度](docs/screenshots/mistakes-960.jpg)
 
+![今日复习：按 FSRS 排期的到期卡片，标注上次得分、已复习与遗忘次数](docs/screenshots/reviews-960.jpg)
+
 > 截图来自本地离线演示模式（未配置 API key 时的降级引擎），所以出题风格偏机械、
 > 判定用的是词面近似而非 Jev。接入 `TYPESAFE_API_KEY` 后界面一致，判定质量不同。
 >
