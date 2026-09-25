@@ -2,6 +2,30 @@
 
 目标：把 Web 端跑在公网上，接进个人网站作为入口。全程约 20 分钟，免费额度够用。
 
+## 当前部署状态（2026-09-25）
+
+| 项 | 值 |
+| --- | --- |
+| Vercel 项目 | `simon-zj1s-projects/jev-exam`（已联通 GitHub 仓库，push 自动部署） |
+| 生产地址 | https://jev-exam.vercel.app |
+| 自定义域名 | `exam.simon-zj.top`（已加到项目，等待阿里云 DNS 的 A 记录生效） |
+| 数据库 | Neon（通过 Vercel 市场集成接入，自动注入 `DATABASE_URL` 等变量） |
+| 已设置的环境变量 | `SESSION_SECRET`、`INITIAL_INVITE_CODES`（Production + Preview）、Neon 注入的 `DATABASE_URL` 系列 |
+| 已关闭 | Deployment Protection（Vercel Authentication 默认开启会把所有人挡在门外） |
+
+重新部署与建表：
+
+```bash
+vercel --prod --yes                                  # 部署
+vercel env pull /tmp/jev-prod.env --environment=production --yes
+set -a; source /tmp/jev-prod.env; set +a
+export DATABASE_URL="${DATABASE_URL_UNPOOLED:-$DATABASE_URL}"
+npx drizzle-kit push --force                          # 建表 / 同步 schema
+```
+
+> 注意：`*.vercel.app` 在国内部分网络会被 TLS 重置（实测直连 000、走代理 200，而 `vercel.com`
+> 直连正常）。所以**必须绑定自定义域名**并对国内可达性做验证；长期面向国内用户建议国内云主机 + 备案。
+
 ## 0. 先要一个临时公网地址？（2 分钟，验证用）
 
 如果只是想先在手机上试，不必等 Vercel。在本机跑生产构建，再用 Cloudflare 的临时隧道暴露出去：
