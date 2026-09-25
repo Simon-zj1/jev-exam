@@ -11,6 +11,8 @@ import { GET as attemptRoute } from "@/app/api/attempts/[id]/route";
 import { GET as meRoute } from "@/app/api/me/route";
 import { POST as judgeRoute } from "@/app/api/exams/[id]/judge/route";
 import { POST as finalizeRoute } from "@/app/api/exams/[id]/finalize/route";
+import { GET as reviewsRoute } from "@/app/api/reviews/route";
+import { POST as reviewGradeRoute } from "@/app/api/reviews/grade/route";
 import { QUOTA_LIMITS } from "@/lib/config";
 import { getStore } from "@/lib/db";
 import { setDecisionEngineOverride } from "@/lib/engine";
@@ -82,6 +84,13 @@ describe("HTTP 层（路由处理器）", () => {
       await finalizeRoute(
         jsonRequest("/api/exams/exam_x/finalize", { method: "POST" }),
         params("exam_x"),
+      ),
+      await reviewsRoute(jsonRequest("/api/reviews")),
+      await reviewGradeRoute(
+        jsonRequest("/api/reviews/grade", {
+          method: "POST",
+          body: { questionId: "q1", payload: null },
+        }),
       ),
     ]) {
       expect(response.status).toBe(401);
@@ -326,5 +335,144 @@ describe("HTTP 层（路由处理器）", () => {
       params(materialId),
     );
     expect(allowed.status).toBe(200);
+  });
+
+  it("复习闭环：交卷 → 到期队列 → 判定推进排期 → 自评模式", async () => {
+    const { cookie } = await login("review-http@example.com", "HTTP-CODE");
+
+    const created = await createMaterialRoute(
+      jsonRequest("/api/materials", {
+        method: "POST",
+        cookie,
+        body: { title: "复习材料", rawText: SAMPLE_MATERIAL },
+      }),
+    );
+    const materialId = ((await created.json()) as { material: { id: string } }).material.id;
+    await outlineRoute(
+      jsonRequest(`/api/materials/${materialId}/outline`, { method: "POST", cookie, body: {} }),
+      params(materialId),
+    );
+    const examResponse = await createExamRoute(
+      jsonRequest("/api/exams", {
+        method: "POST",
+        cookie,
+        body: {
+          materialId,
+          topicIds: [],
+          count: 6,
+          mix: { mcq: 2, true_false: 1, cloze: 1, short_answer: 1 },
+        },
+      }),
+    );
+    const examId = ((await examResponse.json()) as { examId: string }).examId;
+
+    // 取题目与答案键：HTTP 层的作答视图刻意不泄露答案，所以这里从存储层取
+    const questions = await getStore().getQuestions(await getStore().listExamQuestionIds(examId));
+    const target = questions.find((question) => question.type !== "short_answer");
+    expect(target).toBeDefined();
+    if (!target) throw new Error("本题组没有客观题，无法构造确定的错题");
+
+    const payloadFor = (question: (typeof questions)[number], wrong: boolean) => {
+      switch (question.type) {
+        case "mcq": {
+          const correct = question.answerKey.mcq?.correct_index ?? 0;
+          const width = question.options?.length ?? 4;
+          return { type: "mcq", index: wrong ? (correct + 1) % width : correct };
+        }
+        case "true_false": {
+          const answer = question.answerKey.true_false?.answer ?? true;
+          return { type: "true_false", value: wrong ? !answer : answer };
+        }
+        case "cloze": {
+          const answer = question.answerKey.cloze?.answer ?? "";
+          return { type: "cloze", text: wrong ? "明显错误的答案" : answer };
+        }
+        default:
+          return {
+            type: "short_answer",
+            text: "光反应发生在类囊体薄膜上，需要光照，水在光下分解产生氧气。",
+          };
+      }
+    };
+
+    const answers = questions.map((question) => ({
+      questionId: question.id,
+      payload: payloadFor(question, question.id === target.id),
+    }));
+
+    const submitted = await submitRoute(
+      jsonRequest(`/api/exams/${examId}/submit`, { method: "POST", cookie, body: { answers } }),
+      params(examId),
+    );
+    expect(submitted.status).toBe(200);
+
+    // 到期队列里应当恰好只有那道错题
+    const queue = await reviewsRoute(jsonRequest("/api/reviews", { cookie }));
+    expect(queue.status).toBe(200);
+    const queueBody = (await queue.json()) as {
+      stats: { due: number; total: number };
+      cards: { questionId: string }[];
+    };
+    expect(queueBody.stats.due).toBe(1);
+    expect(queueBody.stats.total).toBe(1);
+    expect(queueBody.cards.map((card) => card.questionId)).toEqual([target.id]);
+
+    // 复习时答对 → 评分升到 4，排期推到未来
+    const graded = await reviewGradeRoute(
+      jsonRequest("/api/reviews/grade", {
+        method: "POST",
+        cookie,
+        body: { questionId: target.id, payload: payloadFor(target, false) },
+      }),
+    );
+    expect(graded.status).toBe(200);
+    const gradedBody = (await graded.json()) as {
+      mode: string;
+      rating: number;
+      scorePercent: number;
+      scheduledDays: number;
+      nextDueAt: string;
+    };
+    expect(gradedBody.mode).toBe("judged");
+    expect(gradedBody.scorePercent).toBe(100);
+    expect(gradedBody.rating).toBe(4);
+    expect(gradedBody.scheduledDays).toBeGreaterThan(0);
+    expect(new Date(gradedBody.nextDueAt).getTime()).toBeGreaterThan(Date.now());
+
+    // 队列清空，但卡片仍在（只是排到了未来）
+    const afterGrade = (await (
+      await reviewsRoute(jsonRequest("/api/reviews", { cookie }))
+    ).json()) as { stats: { due: number; total: number } };
+    expect(afterGrade.stats.due).toBe(0);
+    expect(afterGrade.stats.total).toBe(1);
+
+    // 自评模式：手写作答无法自动判定时，让学习者自己给评分
+    const selfReport = await reviewGradeRoute(
+      jsonRequest("/api/reviews/grade", {
+        method: "POST",
+        cookie,
+        body: { questionId: target.id, rating: 2 },
+      }),
+    );
+    expect(selfReport.status).toBe(200);
+    expect(((await selfReport.json()) as { mode: string }).mode).toBe("self-report");
+
+    // 参数校验：缺 questionId 或评分越界都应是 400
+    const missing = await reviewGradeRoute(
+      jsonRequest("/api/reviews/grade", {
+        method: "POST",
+        cookie,
+        body: { payload: payloadFor(target, false) },
+      }),
+    );
+    expect(missing.status).toBe(400);
+    const badRating = await reviewGradeRoute(
+      jsonRequest("/api/reviews/grade", {
+        method: "POST",
+        cookie,
+        body: { questionId: target.id, rating: 9 },
+      }),
+    );
+    expect(badRating.status).toBe(400);
   });
 });

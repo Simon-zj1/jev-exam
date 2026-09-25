@@ -163,6 +163,45 @@ export type NewMistake = Omit<MistakeRecord, "id" | "updatedAt" | "wrongCount"> 
 
 export type UsageSnapshot = Record<QuotaKind, number>;
 
+export type ReviewItemRecord = {
+  id: string;
+  userId: string;
+  questionId: string;
+  materialId: string;
+  topicKey: string;
+  topicTitle: string;
+  stability: number;
+  difficulty: number;
+  reps: number;
+  lapses: number;
+  state: "new" | "learning" | "review" | "relearning";
+  dueAt: Date;
+  lastReviewedAt: Date | null;
+  lastScorePercent: number | null;
+  lastRating: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type NewReviewItem = Omit<ReviewItemRecord, "id" | "createdAt" | "updatedAt">;
+
+export type ReviewLogRecord = {
+  id: string;
+  userId: string;
+  questionId: string;
+  rating: number;
+  scorePercent: number;
+  stabilityBefore: number;
+  difficultyBefore: number;
+  stabilityAfter: number;
+  difficultyAfter: number;
+  elapsedDays: number;
+  scheduledDays: number;
+  reviewedAt: Date;
+};
+
+export type NewReviewLog = Omit<ReviewLogRecord, "id" | "reviewedAt"> & { reviewedAt?: Date };
+
 export interface Store {
   createUser(email: string): Promise<UserRecord>;
   getUser(id: string): Promise<UserRecord | null>;
@@ -228,6 +267,13 @@ export interface Store {
 
   incrementUsage(userId: string, day: string, kind: QuotaKind, amount: number): Promise<number>;
   getUsage(userId: string, day: string): Promise<UsageSnapshot>;
+
+  upsertReviewItem(input: NewReviewItem): Promise<ReviewItemRecord>;
+  getReviewItem(userId: string, questionId: string): Promise<ReviewItemRecord | null>;
+  listReviewItems(userId: string): Promise<ReviewItemRecord[]>;
+  listDueReviewItems(userId: string, dueBefore: Date, limit: number): Promise<ReviewItemRecord[]>;
+  deleteReviewItem(userId: string, questionId: string): Promise<boolean>;
+  saveReviewLog(input: NewReviewLog): Promise<ReviewLogRecord>;
 
   /** 测试与本地重置用 */
   reset(): Promise<void>;

@@ -7,6 +7,7 @@ import { checkQuota } from "@/lib/quota";
 import { readByok } from "@/lib/services/byok";
 import { listMasteryForUser } from "@/lib/services/mistakes";
 import { listExamSummaries } from "@/lib/services/results";
+import { reviewStats } from "@/lib/services/reviews";
 import { engineStatus } from "@/lib/services/status";
 
 export const dynamic = "force-dynamic";
@@ -112,6 +113,7 @@ export default async function HomePage() {
     listExamSummaries(user),
     listMasteryForUser(user),
   ]);
+  const reviews = await reviewStats(user);
   const materials = await getStore().listMaterials(user.id);
   const weak = mastery.slice(0, 5);
   const recent = exams.slice(0, 6);
@@ -164,12 +166,12 @@ export default async function HomePage() {
             </div>
             <div className="grid grid--3" style={{ marginTop: 8 }}>
               <div>
-                <div className="small muted">试卷</div>
-                <div className="score">{exams.length}</div>
+                <div className="small muted">今日待复习</div>
+                <div className="score">{reviews.due}</div>
               </div>
               <div>
-                <div className="small muted">已考</div>
-                <div className="score">{exams.filter((item) => item.latestAttempt).length}</div>
+                <div className="small muted">复习队列</div>
+                <div className="score">{reviews.total}</div>
               </div>
               <div>
                 <div className="small muted">待复核</div>
@@ -178,6 +180,13 @@ export default async function HomePage() {
                 </div>
               </div>
             </div>
+            {reviews.due > 0 ? (
+              <div className="row" style={{ marginTop: 12 }}>
+                <Link className="pill pill--warn" href="/reviews">
+                  开始复习 {reviews.due} 张卡片 →
+                </Link>
+              </div>
+            ) : null}
             <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
               判定引擎：{status.judgeLabel}；出题：{status.generatorLabel}
               {status.generatorModel ? `（${status.generatorModel}）` : ""}

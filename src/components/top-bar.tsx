@@ -12,6 +12,7 @@ export function TopBar({ user }: { user: UserRecord | null }) {
         </Link>
         <nav className="nav">
           <Link href="/materials">材料</Link>
+          <Link href="/reviews">复习</Link>
           <Link href="/mistakes">错题本</Link>
           <Link href="/settings">设置</Link>
         </nav>

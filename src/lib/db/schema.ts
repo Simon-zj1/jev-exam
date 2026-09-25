@@ -215,3 +215,54 @@ export const usageCounters = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.day, table.kind] })],
 );
+
+/**
+ * 复习排程：每张卡片对应一道题，按 FSRS 维护稳定度/难度与下次到期时间。
+ * 它是「错题本」的升级版——错题本回答“错哪些”，这张表回答“什么时候该再练”。
+ */
+export const reviewItems = pgTable(
+  "review_items",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    questionId: text("question_id").notNull(),
+    materialId: text("material_id").notNull(),
+    topicKey: text("topic_key").notNull(),
+    topicTitle: text("topic_title").notNull(),
+    stability: doublePrecision("stability").notNull(),
+    difficulty: doublePrecision("difficulty").notNull(),
+    reps: integer("reps").notNull().default(0),
+    lapses: integer("lapses").notNull().default(0),
+    state: text("state").notNull(),
+    dueAt: timestamp("due_at", { withTimezone: true }).notNull(),
+    lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }),
+    lastScorePercent: integer("last_score_percent"),
+    lastRating: integer("last_rating"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("review_items_user_question_unique").on(table.userId, table.questionId),
+    index("review_items_due_idx").on(table.userId, table.dueAt),
+  ],
+);
+
+/** 每次复习的记录，用于后续用真实数据拟合 FSRS 参数 */
+export const reviewLogs = pgTable(
+  "review_logs",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    questionId: text("question_id").notNull(),
+    rating: integer("rating").notNull(),
+    scorePercent: integer("score_percent").notNull(),
+    stabilityBefore: doublePrecision("stability_before").notNull(),
+    difficultyBefore: doublePrecision("difficulty_before").notNull(),
+    stabilityAfter: doublePrecision("stability_after").notNull(),
+    difficultyAfter: doublePrecision("difficulty_after").notNull(),
+    elapsedDays: doublePrecision("elapsed_days").notNull(),
+    scheduledDays: doublePrecision("scheduled_days").notNull(),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("review_logs_user_idx").on(table.userId, table.reviewedAt)],
+);

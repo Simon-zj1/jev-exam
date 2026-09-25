@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.4.1-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.5.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -102,7 +102,12 @@ npm run dev                 # http://localhost:3000
 echo 'INITIAL_INVITE_CODES=DEV-INVITE' >> .env
 ```
 
-Web 版包含：邀请制登录、材料库、知识点确认、作答、逐点判定报告、错题本与掌握度、每日额度、BYOK。
+Web 版包含：邀请制登录、材料库、知识点确认、作答、逐点判定报告、错题本与掌握度、**间隔重复复习（FSRS-5）**、每日额度、BYOK。
+
+错题不只是被记下来：交卷后失分的题目会立刻进入复习队列（当天可重来），
+复习时按判定分数自动映射成 FSRS 评分并推进下一次到期时间；
+手写作答等无法自动判定的场景可以自评。复习页展示到期卡片、逾期天数与掌握状态，
+仪表盘显示「今天有几张卡到期」。
 
 ### 用法二：Agent Skill / 命令行 / MCP（零服务器）
 
@@ -263,6 +268,7 @@ claude mcp add jev-exam -- npx -y jev-exam@latest mcp
 | `exams` / `exam_questions` | 试卷与题目顺序（错题重考复用原题） |
 | `attempts` / `answers` / `judgments` | 作答、判定结果、引擎版本、原始响应 |
 | `mastery` / `mistake_items` | 知识点掌握度（EMA，学习率 0.3）与错题本 |
+| `review_items` / `review_logs` | 复习卡片（FSRS-5 状态：stability/difficulty/reps/lapses/state/due_at）与每次复习日志 |
 | `usage_counters` | 每日额度计数 |
 
 迁移：

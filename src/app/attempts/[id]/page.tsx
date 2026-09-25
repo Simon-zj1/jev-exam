@@ -17,6 +17,7 @@ import {
 import { locateSource, verifyProvenance } from "@/lib/provenance";
 import { toGeneratedQuestion } from "@/lib/services/questions";
 import { getAttemptResultForUser } from "@/lib/services/results";
+import { reviewStats } from "@/lib/services/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,7 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
   const generated = questions.map((view) => toGeneratedQuestion(view.question));
   const coverage = verifyCoverage(materialText, blueprint?.topics ?? [], generated);
   const provenanceViolations = verifyProvenance(materialText, generated);
+  const reviews = await reviewStats(user);
 
   return (
     <>
@@ -55,6 +57,11 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
             <h1>判定报告</h1>
           </div>
           <div className="row no-print">
+            {reviews.due > 0 ? (
+              <Link className="pill pill--warn" href="/reviews">
+                去复习 {reviews.due} 张卡片 →
+              </Link>
+            ) : null}
             <RetryMistakesButton examId={exam.id} />
             <PrintButton />
           </div>

@@ -16,7 +16,11 @@ import type {
   NewMaterial,
   NewMistake,
   NewQuestion,
+  NewReviewItem,
+  NewReviewLog,
   QuestionRecord,
+  ReviewItemRecord,
+  ReviewLogRecord,
   Store,
   UsageSnapshot,
   UserRecord,
@@ -40,6 +44,8 @@ type MemoryState = {
   mastery: Map<string, MasteryRecord>;
   mistakes: Map<string, MistakeRecord>;
   usage: Map<string, number>;
+  reviewItems: Map<string, ReviewItemRecord>;
+  reviewLogs: ReviewLogRecord[];
 };
 
 function emptyState(): MemoryState {
@@ -57,6 +63,8 @@ function emptyState(): MemoryState {
     mastery: new Map(),
     mistakes: new Map(),
     usage: new Map(),
+    reviewItems: new Map(),
+    reviewLogs: [],
   };
 }
 
@@ -452,5 +460,48 @@ export class MemoryStore implements Store {
       snapshot[kind] = this.state.usage.get(`${userId}::${day}::${kind}`) ?? 0;
     }
     return snapshot;
+  }
+
+  async upsertReviewItem(input: NewReviewItem): Promise<ReviewItemRecord> {
+    const key = `${input.userId}::${input.questionId}`;
+    const existing = this.state.reviewItems.get(key);
+    const record: ReviewItemRecord = {
+      ...input,
+      id: existing?.id ?? createId("rev"),
+      createdAt: existing?.createdAt ?? new Date(),
+      updatedAt: new Date(),
+    };
+    this.state.reviewItems.set(key, record);
+    return record;
+  }
+
+  async getReviewItem(userId: string, questionId: string): Promise<ReviewItemRecord | null> {
+    return this.state.reviewItems.get(`${userId}::${questionId}`) ?? null;
+  }
+
+  async listReviewItems(userId: string): Promise<ReviewItemRecord[]> {
+    return [...this.state.reviewItems.values()]
+      .filter((item) => item.userId === userId)
+      .sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime());
+  }
+
+  async listDueReviewItems(userId: string, dueBefore: Date, limit: number): Promise<ReviewItemRecord[]> {
+    return (await this.listReviewItems(userId))
+      .filter((item) => item.dueAt.getTime() <= dueBefore.getTime())
+      .slice(0, limit);
+  }
+
+  async deleteReviewItem(userId: string, questionId: string): Promise<boolean> {
+    return this.state.reviewItems.delete(`${userId}::${questionId}`);
+  }
+
+  async saveReviewLog(input: NewReviewLog): Promise<ReviewLogRecord> {
+    const record: ReviewLogRecord = {
+      ...input,
+      id: createId("rlg"),
+      reviewedAt: input.reviewedAt ?? new Date(),
+    };
+    this.state.reviewLogs.push(record);
+    return record;
   }
 }

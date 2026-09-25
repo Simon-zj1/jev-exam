@@ -8,6 +8,7 @@ import { assertQuota, recordUsage } from "@/lib/quota";
 import { readByok } from "@/lib/services/byok";
 import { getExamForUser } from "@/lib/services/generation";
 import { toGeneratedQuestion } from "@/lib/services/questions";
+import { syncReviewsFromAttempt } from "@/lib/services/reviews";
 import type { AnswerKey, Judgment } from "@/lib/types";
 
 const MISTAKE_THRESHOLD_PERCENT = 60;
@@ -211,6 +212,9 @@ export async function finalizeAttemptForUser(
     needsReviewCount,
     submittedAt: new Date(),
   });
+
+  // 失分的题目进入复习队列；已在队列里的题目按本次结果推进排期
+  await syncReviewsFromAttempt(user, attempt.id);
 
   const engineId = judgments[0]?.engineId ?? "unknown";
   return {

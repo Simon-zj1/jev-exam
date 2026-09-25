@@ -133,11 +133,23 @@ export class HeuristicGenerationProvider implements GenerationProvider {
     }
 
     while (quota.short_answer > 0) {
-      const topic = topics[cursor % topics.length];
-      cursor += 1;
+      // 凑不满 3 条判定点的知识点做不了简答题，但只跳过它、继续找下一个够长的知识点。
+      // 这里用 break 会让后面的题一并消失（题量静默缩水），所以必须是「换一个再试」。
+      let topic: (typeof topics)[number] | undefined;
+      let spans: string[] = [];
+      for (let attempt = 0; attempt < topics.length; attempt += 1) {
+        const candidate = topics[cursor % topics.length];
+        cursor += 1;
+        if (!candidate) continue;
+        const candidateSpans = candidate.source_spans.slice(0, 5);
+        if (candidateSpans.length >= 3) {
+          topic = candidate;
+          spans = candidateSpans;
+          break;
+        }
+      }
       if (!topic) break;
       quota.short_answer -= 1;
-      const spans = topic.source_spans.slice(0, 5);
       const rubric_points = spans.map((span, index) => ({
         point_id: `p${index + 1}`,
         statement: `答案提到该要点：${truncate(span, 80)}`,

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, lt, lte, or, sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { QUOTA_LIMITS, type QuotaKind } from "@/lib/config";
 import { createId } from "@/lib/ids";
@@ -20,7 +20,11 @@ import type {
   NewMaterial,
   NewMistake,
   NewQuestion,
+  NewReviewItem,
+  NewReviewLog,
   QuestionRecord,
+  ReviewItemRecord,
+  ReviewLogRecord,
   Store,
   UsageSnapshot,
   UserRecord,
@@ -44,6 +48,8 @@ export class PostgresStore implements Store {
   }
 
   async reset(): Promise<void> {
+    await this.db.delete(schema.reviewLogs);
+    await this.db.delete(schema.reviewItems);
     await this.db.delete(schema.usageCounters);
     await this.db.delete(schema.mistakeItems);
     await this.db.delete(schema.mastery);
@@ -578,5 +584,85 @@ export class PostgresStore implements Store {
       }
     }
     return snapshot;
+  }
+
+  async upsertReviewItem(input: NewReviewItem): Promise<ReviewItemRecord> {
+    const rows = await this.db
+      .insert(schema.reviewItems)
+      .values({ ...input, id: createId("rev") })
+      .onConflictDoUpdate({
+        target: [schema.reviewItems.userId, schema.reviewItems.questionId],
+        set: {
+          stability: input.stability,
+          difficulty: input.difficulty,
+          reps: input.reps,
+          lapses: input.lapses,
+          state: input.state,
+          dueAt: input.dueAt,
+          lastReviewedAt: input.lastReviewedAt,
+          lastScorePercent: input.lastScorePercent,
+          lastRating: input.lastRating,
+          topicKey: input.topicKey,
+          topicTitle: input.topicTitle,
+          materialId: input.materialId,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return rows[0] as ReviewItemRecord;
+  }
+
+  async getReviewItem(userId: string, questionId: string): Promise<ReviewItemRecord | null> {
+    const rows = await this.db
+      .select()
+      .from(schema.reviewItems)
+      .where(
+        and(eq(schema.reviewItems.userId, userId), eq(schema.reviewItems.questionId, questionId)),
+      )
+      .limit(1);
+    return (rows[0] as ReviewItemRecord | undefined) ?? null;
+  }
+
+  async listReviewItems(userId: string): Promise<ReviewItemRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(schema.reviewItems)
+      .where(eq(schema.reviewItems.userId, userId))
+      .orderBy(asc(schema.reviewItems.dueAt));
+    return rows as ReviewItemRecord[];
+  }
+
+  async listDueReviewItems(
+    userId: string,
+    dueBefore: Date,
+    limit: number,
+  ): Promise<ReviewItemRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(schema.reviewItems)
+      .where(
+        and(eq(schema.reviewItems.userId, userId), lte(schema.reviewItems.dueAt, dueBefore)),
+      )
+      .orderBy(asc(schema.reviewItems.dueAt))
+      .limit(limit);
+    return rows as ReviewItemRecord[];
+  }
+
+  async deleteReviewItem(userId: string, questionId: string): Promise<boolean> {
+    const rows = await this.db
+      .delete(schema.reviewItems)
+      .where(
+        and(eq(schema.reviewItems.userId, userId), eq(schema.reviewItems.questionId, questionId)),
+      )
+      .returning({ id: schema.reviewItems.id });
+    return rows.length > 0;
+  }
+
+  async saveReviewLog(input: NewReviewLog): Promise<ReviewLogRecord> {
+    const rows = await this.db
+      .insert(schema.reviewLogs)
+      .values({ ...input, id: createId("rlg") })
+      .returning();
+    return rows[0] as ReviewLogRecord;
   }
 }

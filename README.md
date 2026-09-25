@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.4.1-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.5.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -75,8 +75,13 @@ cp .env.example .env      # optional: it runs without any key in offline demo mo
 npm run dev               # http://localhost:3000
 ```
 
-Invite codes, material library, topic confirmation, answering, a point-level report, a mistake log, daily
-quotas and BYOK keys are all included.
+Invite codes, material library, topic confirmation, answering, a point-level report, a mistake log,
+**spaced review (FSRS-5)**, daily quotas and BYOK keys are all included.
+
+Mistakes are not just collected: after you submit, every question you lost points on enters the review
+queue (due the same day), and each review maps the judged score onto an FSRS rating that pushes the next
+due date out. Handwritten answers that cannot be auto-judged can be self-rated. The review page shows due
+cards with overdue days and learning state, and the dashboard shows how many cards are due today.
 
 ### 2. Agent Skill / CLI (no server)
 
