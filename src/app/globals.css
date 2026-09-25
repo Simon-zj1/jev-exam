@@ -524,6 +524,49 @@ th {
   font-size: 13px;
 }
 
+/* 手机端顶栏：品牌不换行、导航可横向滚动、隐藏邮箱避免挤断 */
+@media (max-width: 640px) {
+  .topbar__inner {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .brand {
+    white-space: nowrap;
+  }
+
+  .nav {
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav a {
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  .topbar__right {
+    gap: 6px;
+  }
+
+  /* 邮箱在窄屏没必要占位 */
+  .topbar__right > span {
+    display: none;
+  }
+
+  .topbar__right button,
+  .theme-toggle {
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
 /* 原文出处：悬停或键盘聚焦都能看到 */
 .source-hint {
   position: relative;

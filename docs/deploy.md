@@ -2,6 +2,21 @@
 
 目标：把 Web 端跑在公网上，接进个人网站作为入口。全程约 20 分钟，免费额度够用。
 
+## 0. 先要一个临时公网地址？（2 分钟，验证用）
+
+如果只是想先在手机上试，不必等 Vercel。在本机跑生产构建，再用 Cloudflare 的临时隧道暴露出去：
+
+```bash
+cd ~/Documents/ChatGPT/Ski
+npm run build
+SESSION_SECRET="$(openssl rand -base64 32)" INITIAL_INVITE_CODES="MY-INVITE" npx next start -p 3211
+# 另开一个终端：
+cloudflared tunnel --url http://localhost:3211     # 输出 https://xxx.trycloudflare.com
+```
+
+优点：不用账号、几分钟内手机就能打开；缺点：**进程一停地址就失效**，且数据存在内存里（重启即清空）。
+正式上线请继续下面的步骤。
+
 > 为什么不能直接放进现在的个人网站：`www.simon-zj.top` 是 Hexo 生成的**静态站点**（GitHub Pages），
 > 只能托管 HTML/CSS/JS；本应用需要 Node 服务端（调用模型、读写数据库、签名会话）。
 > 所以做法是：应用部署到 Vercel，网站上加一个入口链接与卡片。

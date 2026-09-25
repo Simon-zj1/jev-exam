@@ -21,50 +21,55 @@ export default async function HomePage() {
         <TopBar user={null} />
         <main className="shell">
           <section className="hero">
-            <span className="pill">Jev / System One · 决策模型驱动的自助考试</span>
-            <h1>上传你的学习材料，自动出一套题，逐点判分</h1>
+            <span className="pill">上传资料就能考你</span>
+            <h1>把资料变成考卷，做完告诉你哪里没学会</h1>
             <p>
-              学习内容由你自己定。系统把材料切成知识点、生成题目与评分点，用决策模型
-              （TypeSafe Jev）对每个得分点做类型化概率判定，再由代码合成分数——
-              量化的是“你有没有说到这个点”，而不是“模型觉得你答得像不像”。
+              上传你自己的教材、笔记或讲义，系统自动出题；你答完，它按得分点逐条批改，
+              明确指出你漏掉了哪一个要点。学习内容完全由你决定，资料只存在你自己的账号里。
             </p>
             <div className="row">
               <Link className="pill" href="/login">
                 邀请码登录 →
               </Link>
               <span className="small muted">
-                默认引擎：{status.judgeLabel} / {status.generatorLabel}
+                当前未配置模型，使用内置演示模式（可在设置里换成你自己的模型 Key）
               </span>
             </div>
           </section>
 
           <section className="grid grid--3">
             <div className="card">
-              <h3>1. 出题与拆点（普通 LLM）</h3>
+              <h3>1. 读懂你的资料</h3>
               <p className="small muted">
-                Jev 不生成任何文字，所以材料理解、出题、评分点拆解由生成式模型完成，
-                并且每道题都要能在原文中定位到出处。
+                先把你上传的内容拆成知识点，再据此出题。每道题都能回到原文的某一句话，
+                你随时可以核对它有没有乱编。
               </p>
             </div>
             <div className="card">
-              <h3>2. 客观题判分（确定性代码）</h3>
+              <h3>2. 两种题分别批改</h3>
               <p className="small muted">
-                单选、判断、填空先走规范化比对；只有填空需要判断“语义等价”时才会调用一次
-                noul 问题。
+                选择题、判断题对错分明，直接判；简答题按「得分点」逐条看你说到了没有，
+                而不是笼统给一个分数。
               </p>
             </div>
             <div className="card">
-              <h3>3. 主观题判分（每个得分点一条 noul）</h3>
+              <h3>3. 不确定会直接告诉你</h3>
               <p className="small muted">
-                简答题不会用一个 0–100 的黑盒分数，而是逐点判定后按权重合成，
-                并额外检查“是否与材料矛盾”“是否编造材料外的事实”。
+                模型没把握的题目会标成「待复核」并给出分数范围，同时不计入你的掌握度，
+                不会用假装确定的分数误导复习方向。
               </p>
             </div>
           </section>
 
           <section className="card">
-            <h2>为什么用决策模型而不是让 LLM 直接打分</h2>
-            <table>
+            <details>
+              <summary className="muted">技术细节：为什么不让大模型直接打个分？（给开发者）</summary>
+              <p className="small muted" style={{ marginTop: 12 }}>
+                一句话：直接打分得到的是一个无法核对的黑盒数字。这里改成把主观题拆成
+                「每个得分点一条类型化问题」，由决策模型（TypeSafe Jev / System One）输出概率，
+                再由代码按权重合成——所以分数能逐条核对，也有置信度可用于门控。
+              </p>
+              <table>
               <thead>
                 <tr>
                   <th>维度</th>
@@ -94,7 +99,8 @@ export default async function HomePage() {
                   <td>能给理由，但理由不一定可信</td>
                 </tr>
               </tbody>
-            </table>
+              </table>
+            </details>
           </section>
         </main>
       </>
