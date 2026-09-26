@@ -22,6 +22,8 @@ import { GET as exportAnkiRoute } from "@/app/api/export/anki/route";
 import { GET as exportMarkdownRoute } from "@/app/api/export/markdown/route";
 import { GET as feedbackRoute, POST as feedbackPostRoute } from "@/app/api/feedback/route";
 import { DELETE as deleteAccountRoute } from "@/app/api/account/route";
+import { GET as healthRoute } from "@/app/api/health/route";
+import { resetRateLimits } from "@/lib/rate-limit";
 import { QUOTA_LIMITS } from "@/lib/config";
 import { getStore } from "@/lib/db";
 import { setDecisionEngineOverride } from "@/lib/engine";
@@ -83,6 +85,8 @@ async function login(email: string, inviteCode?: string) {
 describe("HTTP 层（路由处理器）", () => {
   beforeEach(async () => {
     useMemoryStore();
+    // 限流计数存在进程内存里，用例之间必须清空，否则会互相干扰
+    resetRateLimits();
     setGenerationProviderOverride(new HeuristicGenerationProvider());
     setDecisionEngineOverride(
       new FakeEngine((_state, questions) => {
@@ -97,6 +101,45 @@ describe("HTTP 层（路由处理器）", () => {
   });
 
   afterEach(() => resetOverrides());
+
+  it("健康检查不泄露用户数据，且说明当前引擎", async () => {
+    const response = await healthRoute();
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      ok: boolean;
+      store: string;
+      engines: { judge: string; demoMode: boolean };
+    };
+    expect(body.ok).toBe(true);
+    expect(body.store).toBe("memory");
+    expect(body.engines.judge).toBeTruthy();
+    // 健康检查是公开接口，不能带上任何账号或材料信息
+    expect(JSON.stringify(body)).not.toContain("@");
+  });
+
+  it("登录接口有限流，防止邀请码被无限次试", async () => {
+    const attempt = () =>
+      loginRoute(
+        jsonRequest("/api/auth/login", {
+          method: "POST",
+          body: { email: "bruteforce@example.com", inviteCode: "WRONG" },
+        }),
+      );
+
+    let limited = 0;
+    for (let index = 0; index < 14; index += 1) {
+      const response = await attempt();
+      if (response.status === 429) {
+        limited += 1;
+        if (limited === 1) {
+          expect(response.headers.get("retry-after")).toBeTruthy();
+          const body = (await response.json()) as { code: string };
+          expect(body.code).toBe("rate_limited");
+        }
+      }
+    }
+    expect(limited).toBeGreaterThan(0);
+  });
 
   it("未登录时所有业务接口返回 401", async () => {
     for (const response of [

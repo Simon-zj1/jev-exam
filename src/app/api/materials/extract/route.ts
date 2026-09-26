@@ -3,6 +3,7 @@ import { requireUserFromRequest } from "@/lib/auth/request";
 import { MAX_UPLOAD_LABEL } from "@/lib/config";
 import { toErrorResponse, ValidationError } from "@/lib/errors";
 import { extractMaterialFromFile } from "@/lib/ingest";
+import { rateLimitResponse } from "@/lib/http/rate-guard";
 
 /** pdfjs 与 mammoth 都只能在 Node 运行时跑，且解析大 PDF 需要更长时间。 */
 export const runtime = "nodejs";
@@ -16,6 +17,10 @@ export const maxDuration = 60;
  */
 export async function POST(request: NextRequest) {
   try {
+    // 解析要跑 pdfjs，是单次成本最高的接口，先限流再读文件体
+    const limited = rateLimitResponse(request, "extract");
+    if (limited) return limited;
+
     await requireUserFromRequest(request);
 
     let form: FormData;

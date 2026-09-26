@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requireUserFromRequest } from "@/lib/auth/request";
 import type { QuestionType } from "@/lib/config";
 import { toErrorResponse } from "@/lib/errors";
+import { rateLimitResponse } from "@/lib/http/rate-guard";
 import { createExamForMaterial } from "@/lib/services/generation";
 import { listExamSummaries } from "@/lib/services/results";
 
@@ -31,6 +32,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // 出题是最贵的一类调用（长材料一次几万 token），单独一档更严的限流
+    const limited = rateLimitResponse(request, "generate");
+    if (limited) return limited;
+
     const user = await requireUserFromRequest(request);
     const body = (await request.json()) as {
       materialId?: string;

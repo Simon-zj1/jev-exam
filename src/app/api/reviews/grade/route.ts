@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireUserFromRequest } from "@/lib/auth/request";
 import { toErrorResponse, ValidationError } from "@/lib/errors";
+import { rateLimitResponse } from "@/lib/http/rate-guard";
 import type { ReviewRating } from "@/lib/fsrs";
 import { assertAnswerShape } from "@/lib/services/attempts";
 import { gradeReviewAnswer, selfReportReview } from "@/lib/services/reviews";
@@ -12,6 +13,9 @@ import { gradeReviewAnswer, selfReportReview } from "@/lib/services/reviews";
  */
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimitResponse(request, "judge");
+    if (limited) return limited;
+
     const user = await requireUserFromRequest(request);
     const body = (await request.json()) as {
       questionId?: unknown;

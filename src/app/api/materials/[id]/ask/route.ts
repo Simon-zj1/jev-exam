@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireUserFromRequest } from "@/lib/auth/request";
 import { toErrorResponse, ValidationError } from "@/lib/errors";
+import { rateLimitResponse } from "@/lib/http/rate-guard";
 import { askMaterialQuestion } from "@/lib/services/qa";
 
 export const runtime = "nodejs";
@@ -12,6 +13,9 @@ export const maxDuration = 60;
  */
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const limited = rateLimitResponse(request, "ask");
+    if (limited) return limited;
+
     const user = await requireUserFromRequest(request);
     const { id } = await context.params;
     const body = (await request.json()) as { question?: unknown };

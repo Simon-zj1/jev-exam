@@ -50,6 +50,31 @@ export type OpenAICompatibleOptions = {
 
 const DEFAULT_BASE_URL = "https://api.openai.com/v1";
 
+/** 瞬时故障的重试次数（不含首次）。出题一次可能跑几十秒，重试封顶在 2 次。 */
+export const MAX_TRANSIENT_RETRIES = 2;
+
+/** 带抖动的指数退避：多实例同时重试时避免打成新的尖峰。 */
+function sleepWithBackoff(attempt: number): Promise<void> {
+  const base = 400 * 2 ** attempt;
+  const jitter = Math.floor(Math.random() * 250);
+  return new Promise((resolve) => setTimeout(resolve, base + jitter));
+}
+
+/**
+ * 判断是否值得重试。
+ * - 网络层错误（fetch 抛出的 TypeError）与 AbortError（本地超时）值得重试；
+ * - 429 / 5xx 值得重试；其它 4xx 是请求本身的问题，重试无用。
+ */
+function isTransient(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (error.name === "AbortError" || error.name === "TimeoutError") return true;
+  if (error.name === "TypeError") return true;
+  const match = /LLM 返回 (\d{3})/.exec(error.message);
+  if (!match) return false;
+  const status = Number(match[1]);
+  return status === 429 || status >= 500;
+}
+
 /**
  * 通用 OpenAI 兼容 Chat Completions 客户端（OpenAI / DeepSeek / 兼容网关均可）。
  * 注意：出题与大纲生成必须由这类生成式模型完成，Jev 不生成任何文本。
@@ -74,6 +99,23 @@ export class OpenAICompatibleProvider implements ChatProvider {
   }
 
   async complete(request: ChatRequest): Promise<ChatResponse> {
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt <= MAX_TRANSIENT_RETRIES; attempt += 1) {
+      try {
+        return await this.completeOnce(request);
+      } catch (error) {
+        lastError = error;
+        // 只重试瞬时故障：网络中断、超时、429、5xx。
+        // 401/403/400 这类重试没有意义，只会浪费时间和配额。
+        if (attempt >= MAX_TRANSIENT_RETRIES || !isTransient(error)) break;
+        if (request.signal?.aborted) break;
+        await sleepWithBackoff(attempt);
+      }
+    }
+    throw lastError;
+  }
+
+  private async completeOnce(request: ChatRequest): Promise<ChatResponse> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     const onAbort = () => controller.abort();
