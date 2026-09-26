@@ -1,6 +1,6 @@
 {
   "name": "jev-exam",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "type": "module",
   "description": "把上传的学习材料变成可自动判分的自助考试：出题交给 LLM，判定交给决策模型（TypeSafe Jev），报告与覆盖率可逐条核对。",
   "license": "MIT",
@@ -67,7 +67,9 @@
     "mcp": "tsx scripts/mcp-server.ts",
     "demo:report": "tsx scripts/study.ts demo --out docs/demo",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "schema:check": "tsx scripts/check-schema.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.3",

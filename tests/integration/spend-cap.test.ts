@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { loginWithInvite } from "@/lib/auth/session";
-import { DAILY_SPEND_CAP_MICRO_USD } from "@/lib/config";
+import { DAILY_SPEND_CAP_MICRO_USD, PLATFORM_DAILY_SPEND_CAP_MICRO_USD } from "@/lib/config";
 import { setDecisionEngineOverride } from "@/lib/engine";
 import { setGenerationProviderOverride } from "@/lib/generator";
 import { HeuristicGenerationProvider } from "@/lib/generator/heuristic";
@@ -8,7 +8,12 @@ import { setChatProviderOverride } from "@/lib/llm/provider";
 import { SpendCapExceededError } from "@/lib/errors";
 import { createExamForMaterial, generateOutlineForMaterial } from "@/lib/services/generation";
 import { createMaterialForUser } from "@/lib/services/materials";
-import { assertWithinSpendCap, recordChatUsage, spendStatus } from "@/lib/services/usage";
+import {
+  assertWithinSpendCap,
+  platformSpendStatus,
+  recordChatUsage,
+  spendStatus,
+} from "@/lib/services/usage";
 import { FakeChatProvider, FakeEngine, SAMPLE_MATERIAL, noul, resetOverrides, useMemoryStore } from "../helpers";
 
 describe("模型消费上限", () => {
@@ -29,6 +34,24 @@ describe("模型消费上限", () => {
     expect(status.usedMicroUsd).toBe(0);
     expect(status.remainingMicroUsd).toBe(DAILY_SPEND_CAP_MICRO_USD);
     await expect(assertWithinSpendCap(user.id)).resolves.toBeUndefined();
+  });
+
+  it("平台级熔断：合计用量由所有用户汇总，单人没超也会被拦住", async () => {
+    // 另一个用户花掉接近平台预算的钱（模拟「很多用户各花一点」）
+    await recordChatUsage("someone-else", [
+      { model: "gpt-4o", inputTokens: 4_000_000, outputTokens: 0 },
+    ]);
+
+    // 当前用户自己一分钱没花
+    const own = await spendStatus(user.id);
+    expect(own.exceeded).toBe(false);
+
+    const platform = await platformSpendStatus();
+    expect(platform.capMicroUsd).toBe(PLATFORM_DAILY_SPEND_CAP_MICRO_USD);
+    expect(platform.exceeded).toBe(true);
+
+    // 所以个人没超，也会被平台闸门拦住
+    await expect(assertWithinSpendCap(user.id)).rejects.toBeInstanceOf(SpendCapExceededError);
   });
 
   it("达到上限后拒绝发起新的模型调用", async () => {

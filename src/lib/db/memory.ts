@@ -507,6 +507,20 @@ export class MemoryStore implements Store {
       .sort((a, b) => b.costMicroUsd - a.costMicroUsd);
   }
 
+  async sumLlmUsageForDay(day: string): Promise<LlmUsageDelta> {
+    return [...this.state.llmUsage.entries()]
+      .filter(([key]) => key.split("::")[1] === day)
+      .reduce<LlmUsageDelta>(
+        (total, [, record]) => ({
+          calls: (total.calls ?? 0) + record.calls,
+          inputTokens: (total.inputTokens ?? 0) + record.inputTokens,
+          outputTokens: (total.outputTokens ?? 0) + record.outputTokens,
+          costMicroUsd: (total.costMicroUsd ?? 0) + record.costMicroUsd,
+        }),
+        { calls: 0, inputTokens: 0, outputTokens: 0, costMicroUsd: 0 },
+      );
+  }
+
   async createFeedback(input: NewFeedback): Promise<FeedbackRecord> {
     const record: FeedbackRecord = {
       ...input,

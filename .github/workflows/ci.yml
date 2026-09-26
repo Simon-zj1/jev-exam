@@ -27,6 +27,9 @@ jobs:
       - name: 测试（单元 / 集成 / HTTP / CLI / MCP / PGlite 真库）
         run: npm test
 
+      - name: 校验迁移与 schema.ts 一致
+        run: npm run schema:check
+
       - name: 构建
         run: npm run build
 

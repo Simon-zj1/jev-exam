@@ -1,4 +1,4 @@
-import { DAILY_SPEND_CAP_MICRO_USD } from "@/lib/config";
+import { DAILY_SPEND_CAP_MICRO_USD, PLATFORM_DAILY_SPEND_CAP_MICRO_USD } from "@/lib/config";
 import { getStore } from "@/lib/db";
 import type { LlmUsageRecord } from "@/lib/db/types";
 import { SpendCapExceededError } from "@/lib/errors";
@@ -89,10 +89,39 @@ export async function spendStatus(userId: string): Promise<SpendStatus> {
  */
 export async function assertWithinSpendCap(userId: string): Promise<void> {
   const status = await spendStatus(userId);
-  if (!status.exceeded) return;
-  throw new SpendCapExceededError(
-    `今日模型消费已达上限（估算 ${formatMicroUsd(status.usedMicroUsd)} / ${formatMicroUsd(
-      status.capMicroUsd,
-    )}），明天重置；配置自己的密钥（BYOK）不受此限制。`,
-  );
+  if (status.exceeded) {
+    throw new SpendCapExceededError(
+      `你的今日模型消费已达上限（估算 ${formatMicroUsd(status.usedMicroUsd)} / ${formatMicroUsd(
+        status.capMicroUsd,
+      )}），明天重置；配置自己的密钥（BYOK）不受此限制。`,
+    );
+  }
+
+  // 平台级熔断：单人上限挡不住「很多用户各花一点」，这是最后一道钱的闸门
+  const platform = await platformSpendStatus();
+  if (platform.exceeded) {
+    throw new SpendCapExceededError(
+      `平台今日模型预算已用完（估算 ${formatMicroUsd(
+        platform.usedMicroUsd,
+      )}），平台 Key 暂停使用；配置自己的密钥（BYOK）仍可继续。`,
+    );
+  }
+}
+
+export type PlatformSpendStatus = {
+  usedMicroUsd: number;
+  capMicroUsd: number;
+  ratio: number;
+  exceeded: boolean;
+};
+
+export async function platformSpendStatus(): Promise<PlatformSpendStatus> {
+  const total = await getStore().sumLlmUsageForDay(dayKey());
+  const used = total.costMicroUsd ?? 0;
+  return {
+    usedMicroUsd: used,
+    capMicroUsd: PLATFORM_DAILY_SPEND_CAP_MICRO_USD,
+    ratio: Math.min(1, used / PLATFORM_DAILY_SPEND_CAP_MICRO_USD),
+    exceeded: used >= PLATFORM_DAILY_SPEND_CAP_MICRO_USD,
+  };
 }

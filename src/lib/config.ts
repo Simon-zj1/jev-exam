@@ -92,6 +92,15 @@ export const ASK_MAX_QUESTION_CHARS = 400;
  */
 export const DAILY_SPEND_CAP_MICRO_USD = 500_000; // $0.50
 
+/**
+ * 全平台每天的模型消费上限（微美元）。
+ *
+ * 单人上限挡不住「100 个用户 × $0.50」这种量级：邀请制也拦不住这个数。
+ * 这是最后一道钱的闸门——触发后所有平台 Key 调用一律降级拒绝，
+ * 用户仍可用自己的密钥（BYOK）继续。
+ */
+export const PLATFORM_DAILY_SPEND_CAP_MICRO_USD = 10_000_000; // $10
+
 /** 客户端可见的公开配置（不含任何密钥）。 */
 export function publicConfig() {
   return {

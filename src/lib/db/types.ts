@@ -337,6 +337,8 @@ export interface Store {
     delta: LlmUsageDelta,
   ): Promise<LlmUsageRecord>;
   listLlmUsage(userId: string, day: string): Promise<LlmUsageRecord[]>;
+  /** 平台级熔断用：当天所有用户的合计用量 */
+  sumLlmUsageForDay(day: string): Promise<LlmUsageDelta>;
 
   createFeedback(input: NewFeedback): Promise<FeedbackRecord>;
   /** userId 为 null 时返回全部用户的上报（供本地导出脚本用） */

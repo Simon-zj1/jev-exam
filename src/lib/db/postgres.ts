@@ -635,6 +635,25 @@ export class PostgresStore implements Store {
     return rows as LlmUsageRecord[];
   }
 
+  async sumLlmUsageForDay(day: string): Promise<LlmUsageDelta> {
+    const rows = await this.db
+      .select({
+        calls: sql<number>`coalesce(sum(${schema.llmUsage.calls}), 0)::int`,
+        inputTokens: sql<number>`coalesce(sum(${schema.llmUsage.inputTokens}), 0)::int`,
+        outputTokens: sql<number>`coalesce(sum(${schema.llmUsage.outputTokens}), 0)::int`,
+        costMicroUsd: sql<number>`coalesce(sum(${schema.llmUsage.costMicroUsd}), 0)::int`,
+      })
+      .from(schema.llmUsage)
+      .where(eq(schema.llmUsage.day, day));
+    const row = rows[0];
+    return {
+      calls: row?.calls ?? 0,
+      inputTokens: row?.inputTokens ?? 0,
+      outputTokens: row?.outputTokens ?? 0,
+      costMicroUsd: row?.costMicroUsd ?? 0,
+    };
+  }
+
   async createFeedback(input: NewFeedback): Promise<FeedbackRecord> {
     const rows = await this.db
       .insert(schema.feedbackReports)
