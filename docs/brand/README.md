@@ -45,3 +45,10 @@
 
 改图标时，`docs/brand/icon.svg`、`src/app/icon.svg` 与 `brand-mark.tsx` 三处要一起改，
 它们必须是同一套几何；导出的 PNG 用 `sips` 从 SVG 重新生成。
+
+## 相关文档
+
+- [naming.md](naming.md)：为什么产品名不该叫「Jev 备考」，五个候选与推荐。
+- [candidates/](candidates/)：五个图标候选的 SVG（点睛 / 点石 / 点通 / 拾遗 / 点阵）。
+- [icon-candidates.html](icon-candidates.html)：候选对照页（大尺寸 + 40px 小尺寸 + 含义说明），
+  截图见 [icon-candidates.png](icon-candidates.png)。

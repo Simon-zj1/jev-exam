@@ -493,10 +493,32 @@ th {
 .empty {
   text-align: center;
   color: var(--muted);
-  padding: 32px 16px;
-  border: 1px dashed var(--border);
+  padding: var(--s6) var(--s4);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface-muted);
+  font-size: 14px;
+}
+
+/* 折叠区：细线 + 行内箭头，不再是一个带边框的块 */
+details {
+  border-top: 1px solid var(--border);
+  padding-top: var(--s3);
+}
+
+details:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+summary {
+  cursor: pointer;
+  font-size: 14px;
+  list-style-position: outside;
+}
+
+summary:hover {
+  color: var(--text);
 }
 
 .hero {

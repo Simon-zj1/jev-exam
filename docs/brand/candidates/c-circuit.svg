@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="点通：从没到有，两点连成通路">
+
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4B5BFF"/>
+      <stop offset="100%" stop-color="#17C2A4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="248" fill="url(#g)"/>
+  <rect x="12" y="12" width="1000" height="1000" rx="238" fill="none" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="8"/>
+
+  <circle cx="276" cy="512" r="86" fill="none" stroke="#FFFFFF" stroke-width="44" stroke-opacity="0.7"/>
+  <path d="M368 500 C 470 420, 560 420, 646 492" fill="none" stroke="#FFFFFF" stroke-width="30"
+        stroke-linecap="round" stroke-opacity="0.85"/>
+  <circle cx="706" cy="524" r="118" fill="#FFFFFF"/>
+</svg>
