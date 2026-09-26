@@ -2,6 +2,48 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  /**
+   * 安全响应头。此前一个都没有——点击劫持、MIME 嗅探、Referer 泄漏都是裸奔状态。
+   *
+   * CSP 里保留 'unsafe-inline' 是必须的：Next 的水合引导脚本与首屏防闪白脚本
+   * 都是内联的，去掉会直接白屏。真正收紧要靠 nonce，那是下一步的事，
+   * 但 frame-ancestors / base-uri / object-src 这几条现在就能生效。
+   */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob:",
+              "font-src 'self' data:",
+              "connect-src 'self'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+            ].join("; "),
+          },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), payment=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
+          },
+        ],
+      },
+    ];
+  },
   // pdfjs 与 mammoth 都带 Node 专用资源（wasm / 标准字体 / CJS），
   // 交给 Node 直接 require，避免被 webpack 打包后找不到运行时文件。
   serverExternalPackages: ["postgres", "pdfjs-dist", "mammoth"],
