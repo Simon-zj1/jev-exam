@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.5.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.6.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -65,6 +65,10 @@
 
 报告里每个字段都带来源标签：**材料原文**（可在材料中逐字定位）或**模型补充**（模型生成，允许改写措辞）。
 
+问答沿用同一条契约：答案里每句材料事实都要带 `[n]` 引注，引注指向逐字原文（PDF 还能给到页码）；
+编号越界会被代码删掉并记为问题，没有出处的实质性句子会被单独列出来，材料之外的内容必须自带
+「模型补充」标签。检索不到相关句子时直接回答「材料里没有」，不调用模型也不消耗额度。
+
 ## 这个项目在做什么
 
 三个环节分工是固定的，不能混：
@@ -104,7 +108,11 @@ npm run dev                 # http://localhost:3000
 echo 'INITIAL_INVITE_CODES=DEV-INVITE' >> .env
 ```
 
-Web 版包含：邀请制登录、材料库、知识点确认、作答、逐点判定报告、错题本与掌握度、**间隔重复复习（FSRS-5）**、每日额度、BYOK。
+Web 版包含：邀请制登录、材料库、**上传 PDF/Word 自动解析**、知识点确认、作答、逐点判定报告、
+**就材料提问（答案带出处）**、错题本与掌握度、**间隔重复复习（FSRS-5）**、每日额度、BYOK。
+
+材料可以直接上传文件：PDF 逐页解析并记录页码，所以答案出处能定位到「第几页」；
+Word 取 `.docx` 正文。解析结果先回填表单让你确认，再保存——不会把解析错的段落直接存进材料。
 
 错题不只是被记下来：交卷后失分的题目会立刻进入复习队列（当天可重来），
 复习时按判定分数自动映射成 FSRS 评分并推进下一次到期时间；
@@ -264,7 +272,7 @@ claude mcp add jev-exam -- npx -y jev-exam@latest mcp
 | 表 | 作用 |
 | --- | --- |
 | `users` / `invite_codes` | 邀请制账号，BYOK 密钥加密列 |
-| `materials` | 原始材料（纯文本/Markdown） |
+| `materials` | 材料正文 + `source_map`（上传来源的页码映射，PDF 才有） |
 | `exam_blueprints` | 知识点大纲（每份材料一份，带版本） |
 | `questions` | 题目 + 答案键 + rubric 点 + 原文锚点 |
 | `exams` / `exam_questions` | 试卷与题目顺序（错题重考复用原题） |
@@ -353,12 +361,17 @@ examples/              示例材料
 1. **认证**：MVP 使用「邀请码 + 邮箱 + 签名 Cookie」，接口抽象在
    [src/lib/auth/session.ts](src/lib/auth/session.ts) 的 `AuthProvider`。
    换成 Supabase Auth（邮箱 OTP）+ RLS 只需要替换该 provider，业务与路由不动。
-2. **材料范围**：Web 版只支持粘贴纯文本/Markdown，不做 PDF 解析、OCR 与网页抓取。
-3. **不做数学与代码判分**：计算类题目需要执行器/符号等价检查，Jev 只用于语义要点判定。
-4. **结果页的解释**：Jev 不给理由，所以「为什么」只能来自 rubric 点本身
+2. **材料范围**：支持粘贴纯文本/Markdown，以及上传 PDF / Word（.docx）自动解析。
+   **扫描件与图片型 PDF 不做 OCR**（会明确提示"这页没有文字"），旧版 `.doc` 需要先另存为 `.docx`；
+   单个文件上限 4 MB（Vercel Serverless 请求体限制），更大的文档建议先拆分。
+3. **问答的检索是词面检索**：材料内按 TF × IDF 选证据（英文按词、中文按二元组），
+   同义改写可能命中不到；命中不到时会如实说"材料里没有"，不会用模型记忆补。
+   接入向量检索只需要替换 [src/lib/retrieval.ts](src/lib/retrieval.ts)。
+4. **不做数学与代码判分**：计算类题目需要执行器/符号等价检查，Jev 只用于语义要点判定。
+5. **结果页的解释**：Jev 不给理由，所以「为什么」只能来自 rubric 点本身
    （哪些点命中、哪些没命中、扣分项概率多少），不展示模型解释。
-5. **待复核不自动复审**：低置信度题目只标记、不计入掌握度，不自动调用更强的模型改判。
-6. **覆盖率不等于正确性**：覆盖率只说明「要点有没有被出题」，不说明题目本身出得好不好。
+6. **待复核不自动复审**：低置信度题目只标记、不计入掌握度，不自动调用更强的模型改判。
+7. **覆盖率不等于正确性**：覆盖率只说明「要点有没有被出题」，不说明题目本身出得好不好。
 
 ## 后续路线
 

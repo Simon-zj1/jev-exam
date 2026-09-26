@@ -15,6 +15,13 @@
       "when": 1790359308064,
       "tag": "0001_loud_lilith",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790393332703,
+      "tag": "0002_adorable_rick_jones",
+      "breakpoints": true
     }
   ]
 }

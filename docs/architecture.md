@@ -113,9 +113,12 @@ src/lib/generator/    出题：LLM 出题器、离线出题器、落地校验（
 src/lib/grading/      判分：客观题确定性判分、主观题逐点合成与门控
 src/lib/coverage.ts   覆盖率审计（哪些材料要点没被出题）
 src/lib/provenance.ts 溯源契约（材料事实 vs 模型补充）
+src/lib/ingest/       上传解析：PDF（pdfjs，逐页 + 页面边界）、Word（mammoth）、纯文本；来源映射校验
+src/lib/retrieval.ts  材料内证据检索（TF × IDF；英文按词、中文按二元组）
+src/lib/qa/           问答契约：提示词、引注校验（越界删除、无出处句子、模型补充标签）
 src/lib/security/     不可信材料扫描、分隔符转义、HTML 转义
 src/lib/report.ts     离线 HTML / Markdown 报告渲染（支持品牌色与自定义 CSS）
-src/lib/services/     业务服务层：材料、大纲、试卷、作答判定（逐题/一次性）、结果、错题、BYOK、额度
+src/lib/services/     业务服务层：材料、大纲、试卷、作答判定、结果、错题、复习排期、材料问答、BYOK、额度
 src/lib/db/           Drizzle schema + Store 接口 + Postgres / 内存两种实现
 src/app/              Next.js 页面与 Route Handlers（含 /judge 与 /finalize 渐进判定）
 scripts/study.ts      CLI：verify / grade / render / answer-template / demo

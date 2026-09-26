@@ -2,8 +2,7 @@ import type { ByokConfig } from "@/lib/byok";
 import { LexicalJudgeEngine } from "@/lib/engine/lexical";
 import { LLMJudgeEngine } from "@/lib/engine/llm-judge";
 import { TypeSafeEngine } from "@/lib/engine/typesafe";
-import { detectProvider } from "@/lib/llm/catalog";
-import { OpenAICompatibleProvider, resolvePlatformChatProvider } from "@/lib/llm/provider";
+import { resolveChatProvider, resolvePlatformChatProvider } from "@/lib/llm/provider";
 import type { DecisionEngine } from "@/lib/types";
 
 export type EngineMode = "byok" | "platform" | "offline";
@@ -77,14 +76,7 @@ export function resolveDecisionEngine(context: EngineContext = {}): EngineSelect
 export function resolveByokChatProvider(byok?: ByokConfig | null) {
   const llm = byok?.llm;
   if (!llm?.apiKey) return null;
-  // 用户选了服务商就按它走；没选就按 Key 形状推断（sk- 这类会落到 OpenAI）
-  const profile = detectProvider(llm.apiKey, llm.provider);
-  return new OpenAICompatibleProvider({
-    apiKey: llm.apiKey,
-    baseUrl: llm.baseUrl ?? profile.baseUrl ?? undefined,
-    model: llm.model ?? profile.defaultModel ?? "gpt-4o-mini",
-    origin: "byok",
-  });
+  return resolveChatProvider(llm).provider;
 }
 
 export { LexicalJudgeEngine, LLMJudgeEngine, TypeSafeEngine };

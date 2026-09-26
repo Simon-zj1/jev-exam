@@ -577,7 +577,10 @@ export class PostgresStore implements Store {
       .select()
       .from(schema.usageCounters)
       .where(and(eq(schema.usageCounters.userId, userId), eq(schema.usageCounters.day, day)));
-    const snapshot: UsageSnapshot = { material: 0, question: 0, judgment: 0 };
+    const snapshot = {} as UsageSnapshot;
+    for (const kind of Object.keys(QUOTA_LIMITS) as QuotaKind[]) {
+      snapshot[kind] = 0;
+    }
     for (const row of rows as { kind: string; amount: number }[]) {
       if ((Object.keys(QUOTA_LIMITS) as string[]).includes(row.kind)) {
         snapshot[row.kind as QuotaKind] = row.amount;

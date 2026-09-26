@@ -599,6 +599,89 @@ th {
   white-space: normal;
 }
 
+/* 上传解析：拖放区在移动端退化为整块可点，避免手指够不到按钮 */
+.dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dropzone--active {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+
+.dropzone strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 640px) {
+  .dropzone {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dropzone button {
+    width: 100%;
+  }
+}
+
+/* 材料问答：答案正文与引注 */
+.ask-answer {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+  line-height: 1.85;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cite {
+  display: inline-block;
+  margin: 0 2px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  vertical-align: super;
+  line-height: 1.4;
+}
+
+.cite:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
+.cite-list {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 10px;
+}
+
+.cite-list li {
+  line-height: 1.7;
+  border-left: 2px solid var(--border);
+  padding: 2px 0 2px 12px;
+  scroll-margin-top: 90px;
+}
+
+.cite-list li:target {
+  border-left-color: var(--brand);
+  background: var(--brand-soft);
+}
+
 @media print {
   .topbar,
   .no-print {

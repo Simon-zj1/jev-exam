@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { NextRequest } from "next/server";
 import { POST as loginRoute } from "@/app/api/auth/login/route";
 import { GET as materialsRoute, POST as createMaterialRoute } from "@/app/api/materials/route";
 import { GET as materialDetailRoute } from "@/app/api/materials/[id]/route";
 import { POST as outlineRoute } from "@/app/api/materials/[id]/outline/route";
+import { POST as extractRoute } from "@/app/api/materials/extract/route";
+import { POST as askRoute } from "@/app/api/materials/[id]/ask/route";
 import { POST as createExamRoute } from "@/app/api/exams/route";
 import { GET as examRoute } from "@/app/api/exams/[id]/route";
 import { POST as submitRoute } from "@/app/api/exams/[id]/submit/route";
@@ -18,7 +22,15 @@ import { getStore } from "@/lib/db";
 import { setDecisionEngineOverride } from "@/lib/engine";
 import { setGenerationProviderOverride } from "@/lib/generator";
 import { HeuristicGenerationProvider } from "@/lib/generator/heuristic";
-import { FakeEngine, SAMPLE_MATERIAL, noul, resetOverrides, useMemoryStore } from "../helpers";
+import { setChatProviderOverride } from "@/lib/llm/provider";
+import {
+  FakeChatProvider,
+  FakeEngine,
+  SAMPLE_MATERIAL,
+  noul,
+  resetOverrides,
+  useMemoryStore,
+} from "../helpers";
 
 function jsonRequest(
   path: string,
@@ -35,6 +47,18 @@ function jsonRequest(
 
 function params(id: string) {
   return { params: Promise.resolve({ id }) };
+}
+
+function multipartRequest(
+  path: string,
+  file: { bytes: Uint8Array; name: string; type: string },
+  cookie?: string,
+): NextRequest {
+  const form = new FormData();
+  form.append("file", new File([file.bytes as BlobPart], file.name, { type: file.type }));
+  const headers: Record<string, string> = {};
+  if (cookie) headers.cookie = cookie;
+  return new NextRequest(`http://localhost${path}`, { method: "POST", headers, body: form });
 }
 
 function cookieFrom(response: Response): string {
@@ -91,6 +115,11 @@ describe("HTTP 层（路由处理器）", () => {
           method: "POST",
           body: { questionId: "q1", payload: null },
         }),
+      ),
+      await extractRoute(jsonRequest("/api/materials/extract", { method: "POST", body: {} })),
+      await askRoute(
+        jsonRequest("/api/materials/mat_x/ask", { method: "POST", body: { question: "这是什么？" } }),
+        params("mat_x"),
       ),
     ]) {
       expect(response.status).toBe(401);
@@ -474,5 +503,87 @@ describe("HTTP 层（路由处理器）", () => {
       }),
     );
     expect(badRating.status).toBe(400);
+  });
+
+  it("上传解析 → 保存材料 → 就材料提问并带上出处", async () => {
+    const { cookie } = await login("uploader@example.com", "HTTP-CODE");
+    const pdf = new Uint8Array(
+      readFileSync(fileURLToPath(new URL("../fixtures/sample.pdf", import.meta.url))),
+    );
+
+    // 1) 解析：只返回文本与页面映射，不落库
+    const extracted = await extractRoute(
+      multipartRequest(
+        "/api/materials/extract",
+        { bytes: pdf, name: "RAG 笔记.pdf", type: "application/pdf" },
+        cookie,
+      ),
+    );
+    expect(extracted.status).toBe(200);
+    const extraction = (await extracted.json()) as {
+      extraction: { kind: string; title: string; text: string; pageCount: number };
+      sourceMap: { pages: { page: number }[] | null };
+    };
+    expect(extraction.extraction.kind).toBe("pdf");
+    expect(extraction.extraction.title).toBe("RAG 笔记");
+    expect(extraction.extraction.pageCount).toBe(2);
+    expect(extraction.extraction.text).toContain("Vector search encodes text into vectors");
+    expect(extraction.sourceMap.pages?.map((page) => page.page)).toEqual([1, 2]);
+
+    // 2) 保存：网页端把解析结果回填表单后再提交，这里模拟同样的请求
+    const saved = await createMaterialRoute(
+      jsonRequest("/api/materials", {
+        method: "POST",
+        cookie,
+        body: {
+          title: extraction.extraction.title,
+          rawText: extraction.extraction.text,
+          sourceMap: extraction.sourceMap,
+        },
+      }),
+    );
+    expect(saved.status).toBe(201);
+    const materialId = ((await saved.json()) as { material: { id: string } }).material.id;
+
+    // 3) 提问：注入假模型，验证引注与页码回填
+    setChatProviderOverride(
+      new FakeChatProvider(
+        () => "向量检索把文本编码成向量，用相似度做语义召回[1]。",
+      ),
+    );
+    const asked = await askRoute(
+      jsonRequest(`/api/materials/${materialId}/ask`, {
+        method: "POST",
+        cookie,
+        body: { question: "vector search 是怎么工作的？" },
+      }),
+      params(materialId),
+    );
+    expect(asked.status).toBe(200);
+    const body = (await asked.json()) as {
+      answer: {
+        mode: string;
+        citations: { marker: number; text: string; page: number | null }[];
+        issues: { kind: string }[];
+      };
+    };
+    expect(body.answer.mode).toBe("llm");
+    expect(body.answer.citations).toHaveLength(1);
+    // 出处逐字来自材料，并且能定位到第 1 页
+    expect(extraction.extraction.text).toContain(body.answer.citations[0].text);
+    expect(body.answer.citations[0].page).toBe(1);
+    expect(body.answer.issues.map((issue) => issue.kind)).not.toContain("unknown_citation");
+
+    // 4) 别人的材料提问会被拒绝
+    const intruder = await login("ask-intruder@example.com", "HTTP-CODE");
+    const denied = await askRoute(
+      jsonRequest(`/api/materials/${materialId}/ask`, {
+        method: "POST",
+        cookie: intruder.cookie,
+        body: { question: "这是什么材料？" },
+      }),
+      params(materialId),
+    );
+    expect(denied.status).toBe(403);
   });
 });

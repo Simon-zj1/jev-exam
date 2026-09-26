@@ -194,3 +194,62 @@ export function resolveGenerationConfig(): GenerationConfig | null {
 export function resolvePlatformChatProvider(): ChatProvider | null {
   return resolveGenerationConfig()?.provider ?? null;
 }
+
+export type ChatSelection = {
+  provider: ChatProvider | null;
+  mode: "byok" | "platform" | "offline";
+  /** 是否计入平台额度：byok 与离线都不计 */
+  countsAgainstQuota: boolean;
+};
+
+export type ChatCredential = {
+  apiKey: string;
+  provider?: string;
+  baseUrl?: string;
+  model?: string;
+};
+
+let chatOverride: ChatSelection | null = null;
+
+/**
+ * 测试/评测专用：强制所有对话调用走同一个 provider。
+ * 允许声明「算不算平台额度」，这样额度闸门也能被真实覆盖到（而不是只在生产路径上生效）。
+ */
+export function setChatProviderOverride(
+  provider: ChatProvider | null,
+  options: { countsAgainstQuota?: boolean; mode?: ChatSelection["mode"] } = {},
+): void {
+  chatOverride = provider
+    ? {
+        provider,
+        mode: options.mode ?? "platform",
+        countsAgainstQuota: options.countsAgainstQuota ?? false,
+      }
+    : null;
+}
+
+/**
+ * 对话模型选择顺序：用户自带 LLM key → 平台 LLM key → 无（由调用方决定降级方式）。
+ * 材料问答与出题共用同一条选择链，避免「出题能跑、问答没模型」这种半残状态。
+ */
+export function resolveChatProvider(credential?: ChatCredential | null): ChatSelection {
+  if (chatOverride) return chatOverride;
+
+  if (credential?.apiKey) {
+    const profile = detectProvider(credential.apiKey, credential.provider);
+    return {
+      provider: new OpenAICompatibleProvider({
+        apiKey: credential.apiKey,
+        baseUrl: credential.baseUrl ?? profile.baseUrl ?? undefined,
+        model: credential.model ?? profile.defaultModel ?? "gpt-4o-mini",
+        origin: "byok",
+      }),
+      mode: "byok",
+      countsAgainstQuota: false,
+    };
+  }
+
+  const platform = resolvePlatformChatProvider();
+  if (platform) return { provider: platform, mode: "platform", countsAgainstQuota: true };
+  return { provider: null, mode: "offline", countsAgainstQuota: false };
+}

@@ -1,5 +1,6 @@
 import type { QuotaKind, QuestionType } from "@/lib/config";
 import type { AnswerPayload } from "@/lib/grading";
+import type { SourceMap } from "@/lib/ingest/types";
 import type {
   AnswerKey,
   JudgmentMethod,
@@ -37,10 +38,13 @@ export type MaterialRecord = {
   rawText: string;
   tokenCount: number;
   contentHash: string;
+  sourceMap: SourceMap | null;
   createdAt: Date;
 };
 
-export type NewMaterial = Omit<MaterialRecord, "id" | "createdAt">;
+export type NewMaterial = Omit<MaterialRecord, "id" | "createdAt" | "sourceMap"> & {
+  sourceMap?: SourceMap | null;
+};
 
 export type BlueprintRecord = {
   id: string;

@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.5.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.6.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -53,6 +53,11 @@ combine the probabilities in code. Every point in the final score can be audited
 
 Every field in the report is tagged **material** (locatable verbatim) or **model-added** (generated).
 
+Q&A follows the same contract: every factual sentence carries a `[n]` citation pointing at a verbatim span
+(with a page number for PDFs). Out-of-range markers are deleted and reported by code, sentences with no
+source are listed separately, and anything outside the material must be tagged "model-added". When retrieval
+finds nothing relevant the app answers "the material does not say" without calling a model at all.
+
 ## How it works
 
 | Step | Owner | Note |
@@ -78,7 +83,12 @@ npm run dev               # http://localhost:3000
 ```
 
 Invite codes, material library, topic confirmation, answering, a point-level report, a mistake log,
-**spaced review (FSRS-5)**, daily quotas and BYOK keys are all included.
+**PDF/Word upload with automatic extraction**, **material Q&A with sources**, **spaced review (FSRS-5)**,
+daily quotas and BYOK keys are all included.
+
+Upload a file instead of pasting: PDFs are parsed page by page and the page boundaries are stored, so a
+citation can point at "page 3"; Word documents give up their `.docx` text. Extraction only fills the form —
+nothing is saved until you review the text, so a bad extraction never lands in your material silently.
 
 Mistakes are not just collected: after you submit, every question you lost points on enters the review
 queue (due the same day), and each review maps the judged score onto an FSRS rating that pushes the next
@@ -166,6 +176,11 @@ calibrated decision model instead of word overlap.
 Uploaded material is treated as untrusted data: instructions found inside it are never executed, and a
 scanner flags prompt injection, role hijacking and script injection. The provenance contract keeps generated
 content from masquerading as a quoted source. See [SECURITY.md](SECURITY.md).
+
+Known limits: scanned or image-only PDFs are not OCR'd (the app says which pages had no text), legacy `.doc`
+files must be re-saved as `.docx`, uploads are capped at 4 MB because of the serverless request-body limit,
+and retrieval inside a material is lexical (TF × IDF: words for Latin, bigrams for Chinese) — a paraphrase
+may not be found, and the app then says so instead of guessing.
 
 ## License
 

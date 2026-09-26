@@ -49,6 +49,7 @@ export const QUOTA_LIMITS = {
   material: 3,
   question: 100,
   judgment: 1000,
+  ask: 200,
 } as const;
 
 export type QuotaKind = keyof typeof QUOTA_LIMITS;
@@ -63,6 +64,23 @@ export const ANCHOR_MIN_LENGTH = 8;
 export const DEDUPE_SIMILARITY_THRESHOLD = 0.85;
 
 export const MAX_MATERIAL_CHARS = 120_000;
+
+/**
+ * 上传文件上限。Vercel 的 Serverless 请求体上限是 4.5 MB，
+ * 取 4 MB 留出 multipart 边界的余量，避免线上才炸。
+ */
+export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+export const MAX_UPLOAD_LABEL = "4 MB";
+
+/** PDF 最多解析多少页（页数上限之外的部分直接丢弃并提示）。 */
+export const INGEST_MAX_PAGES = 200;
+
+/** 材料问答：检索几条证据、最多引用几条。 */
+export const ASK_TOP_K = 6;
+export const ASK_MAX_CITATIONS = 6;
+/** 检索不到任何证据时，直接如实回答「材料里没有」，不交给模型编。 */
+export const ASK_MIN_EVIDENCE = 1;
+export const ASK_MAX_QUESTION_CHARS = 400;
 
 /** 客户端可见的公开配置（不含任何密钥）。 */
 export function publicConfig() {

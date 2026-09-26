@@ -2,6 +2,7 @@ import { MemoryStore } from "@/lib/db/memory";
 import { setStoreForTests } from "@/lib/db";
 import { setDecisionEngineOverride } from "@/lib/engine";
 import { setGenerationProviderOverride } from "@/lib/generator";
+import { setChatProviderOverride, type ChatProvider, type ChatRequest, type ChatResponse } from "@/lib/llm/provider";
 import type { DecisionAnswer, DecisionEngine, DecisionQuestion, DecisionResult } from "@/lib/types";
 
 export function useMemoryStore(): MemoryStore {
@@ -13,7 +14,29 @@ export function useMemoryStore(): MemoryStore {
 export function resetOverrides(): void {
   setDecisionEngineOverride(null);
   setGenerationProviderOverride(null);
+  setChatProviderOverride(null);
   setStoreForTests(null);
+}
+
+/**
+ * 测试用对话模型：由回调决定返回的文本，用来构造「引注越界」「没有引注」等场景。
+ */
+export class FakeChatProvider implements ChatProvider {
+  readonly id = "fake-chat";
+  readonly model = "fake-chat-1.0.0";
+  readonly origin: "byok" | "platform";
+  calls: ChatRequest[] = [];
+  private readonly responder: (request: ChatRequest) => string;
+
+  constructor(responder: (request: ChatRequest) => string, origin: "byok" | "platform" = "platform") {
+    this.responder = responder;
+    this.origin = origin;
+  }
+
+  async complete(request: ChatRequest): Promise<ChatResponse> {
+    this.calls.push(request);
+    return { text: this.responder(request), model: this.model };
+  }
 }
 
 /**

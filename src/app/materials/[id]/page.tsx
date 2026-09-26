@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { AskPanel } from "@/components/ask-panel";
 import { ExamBuilder } from "@/components/exam-builder";
 import { GenerateOutlineButton } from "@/components/generate-outline-button";
 import { TopBar } from "@/components/top-bar";
@@ -72,10 +73,21 @@ export default async function MaterialDetailPage({
 
         <section className="card">
           <h2>材料原文（预览）</h2>
+          {material.sourceMap ? (
+            <p className="small muted">
+              来源：{material.sourceMap.fileName}
+              {material.sourceMap.pageCount ? ` · ${material.sourceMap.pageCount} 页` : ""}
+              {material.sourceMap.pages
+                ? ` · 出处可定位到页码（共 ${material.sourceMap.pages.length} 页有文字）`
+                : ""}
+            </p>
+          ) : null}
           <p className="small muted" style={{ whiteSpace: "pre-wrap" }}>
             {truncate(material.rawText, 900)}
           </p>
         </section>
+
+        <AskPanel materialId={material.id} />
 
         {!blueprint ? (
           <section className="card">

@@ -1,6 +1,6 @@
 {
   "name": "jev-exam",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "module",
   "description": "把上传的学习材料变成可自动判分的自助考试：出题交给 LLM，判定交给决策模型（TypeSafe Jev），报告与覆盖率可逐条核对。",
   "license": "MIT",
@@ -64,7 +64,9 @@
   },
   "dependencies": {
     "drizzle-orm": "^0.45.3",
+    "mammoth": "^1.12.3",
     "next": "15.5.25",
+    "pdfjs-dist": "^6.3.289",
     "postgres": "^3.4.9",
     "react": "19.3.0",
     "react-dom": "19.3.0",

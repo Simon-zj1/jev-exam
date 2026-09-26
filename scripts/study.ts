@@ -12,6 +12,7 @@
  *   tsx scripts/study.ts grade  --material material.md --exam exam.json --answers answers.json --out ./learning_work
  *   tsx scripts/study.ts render --report report.json --out report.html [--md report.md]
  *   tsx scripts/study.ts demo   --out docs/demo
+ *   tsx scripts/study.ts extract --file 材料.pdf --out material.md
  */
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -24,6 +25,7 @@ import { resolvePlatformChatProvider } from "@/lib/llm/provider";
 import { gradeQuestion, type AnswerPayload } from "@/lib/grading";
 import { generatedQuestionSchema, topicSchema } from "@/lib/generator/schema";
 import { HeuristicGenerationProvider } from "@/lib/generator/heuristic";
+import { extractMaterialFromFile } from "@/lib/ingest";
 import { verifyProvenance, PROVENANCE_CONTRACT } from "@/lib/provenance";
 import {
   buildStudyReport,
@@ -212,6 +214,38 @@ async function commandAnswerTemplate(flags: Parsed): Promise<void> {
   });
   await writeJson(out, { version: 1, answers });
   line(`✓ 已生成作答模板：${out}（${answers.length} 题）`);
+}
+
+/**
+ * 把 PDF / Word / 文本解析成纯文本，供后续 verify / grade 使用。
+ * 与网页端同一套解析器，所以「网页解析出来的文本」和「CLI 解析出来的文本」是一致的。
+ */
+async function commandExtract(flags: Parsed): Promise<void> {
+  const filePath = flags.file;
+  if (typeof filePath !== "string") {
+    fail("用法：study.ts extract --file <材料.pdf|材料.docx|材料.md> [--out material.md] [--json out.json]");
+  }
+
+  const buffer = await readFile(resolve(filePath));
+  const { result, sourceMap } = await extractMaterialFromFile({
+    buffer: new Uint8Array(buffer),
+    fileName: filePath.split("/").pop() ?? filePath,
+  });
+
+  const outPath = typeof flags.out === "string" ? flags.out : undefined;
+  if (outPath) {
+    await writeText(outPath, result.text);
+  }
+  if (typeof flags.json === "string") {
+    await writeJson(flags.json, { extraction: result, sourceMap });
+  }
+
+  line(`解析：${filePath} → ${result.kind}（${result.stats.charCount} 字符）`);
+  if (result.pageCount !== null) line(`页数：${result.pageCount}（${result.pages?.length ?? 0} 页有文字）`);
+  line(`标题：${result.title}`);
+  for (const warning of result.warnings) line(`提示：${warning}`);
+  line(outPath ? `正文已写入：${outPath}` : "正文：");
+  if (!outPath && !flags.json) line(result.text);
 }
 
 async function commandVerify(flags: Parsed): Promise<void> {
@@ -433,6 +467,7 @@ function printHelp(): void {
   grade           --material material.md --exam exam.json --answers answers.json [--out ./learning_work] [--engine offline|typesafe]
   render          --report report.json --out report.html [--md report.md]
   demo            [--out docs/demo]
+  extract         --file 材料.pdf|材料.docx|材料.md [--out material.md] [--json extract.json]
 
 试卷文件（exam.json）：
   { "title": "...", "generator": "agent", "topics": [...], "questions": [...] }
@@ -457,6 +492,8 @@ async function main(): Promise<void> {
       return commandRender(flags);
     case "demo":
       return commandDemo(flags);
+    case "extract":
+      return commandExtract(flags);
     default:
       printHelp();
   }

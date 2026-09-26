@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AnswerPayload } from "@/lib/grading";
 import type { ExamConfigRecord } from "@/lib/db/types";
+import type { SourceMap } from "@/lib/ingest/types";
 import type {
   AnswerKey,
   JudgmentPenalty,
@@ -48,6 +49,11 @@ export const materials = pgTable(
     rawText: text("raw_text").notNull(),
     tokenCount: integer("token_count").notNull().default(0),
     contentHash: text("content_hash").notNull(),
+    /**
+     * 上传来源的页面映射（PDF 才有）。粘贴文本时为 null。
+     * 存下来是为了让「答案出处」能定位到具体页码，而不是只能引用句子。
+     */
+    sourceMap: jsonb("source_map").$type<SourceMap | null>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("materials_user_idx").on(table.userId)],

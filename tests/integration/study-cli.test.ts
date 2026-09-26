@@ -116,4 +116,36 @@ describe("命令行工具（Agent Skill 的执行入口）", () => {
       exam.questions.map((question) => question.id),
     );
   });
+
+  it("extract 把 PDF 解析成可继续使用的纯文本，并给出页码", () => {
+    const dir = mkdtempSync(join(tmpdir(), "jev-extract-"));
+    const pdfPath = join(repoRoot, "tests", "fixtures", "sample.pdf");
+    const outPath = join(dir, "material.md");
+    const jsonPath = join(dir, "extract.json");
+
+    const output = run(["extract", "--file", pdfPath, "--out", outPath, "--json", jsonPath]);
+    expect(output).toContain("→ pdf");
+    expect(output).toContain("页数：2");
+
+    const text = readFileSync(outPath, "utf8");
+    expect(text).toContain("Vector search encodes text into vectors");
+    expect(text).toContain("Reranking rescores the recalled passages.");
+
+    const parsed = JSON.parse(readFileSync(jsonPath, "utf8")) as {
+      extraction: { kind: string; pageCount: number };
+      sourceMap: { pages: { page: number }[] };
+    };
+    expect(parsed.extraction.kind).toBe("pdf");
+    expect(parsed.extraction.pageCount).toBe(2);
+    expect(parsed.sourceMap.pages.map((page) => page.page)).toEqual([1, 2]);
+  });
+
+  it("extract 对不支持的格式给出中文提示", () => {
+    const dir = mkdtempSync(join(tmpdir(), "jev-extract-bad-"));
+    const badPath = join(dir, "old.doc");
+    writeFileSync(badPath, Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]));
+
+    const output = run(["extract", "--file", badPath], { expectFailure: true });
+    expect(output).toContain("另存为 .docx");
+  });
 });

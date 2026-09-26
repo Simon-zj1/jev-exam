@@ -160,7 +160,12 @@ export class MemoryStore implements Store {
   }
 
   async createMaterial(input: NewMaterial): Promise<MaterialRecord> {
-    const record: MaterialRecord = { ...input, id: createId("mat"), createdAt: new Date() };
+    const record: MaterialRecord = {
+      ...input,
+      sourceMap: input.sourceMap ?? null,
+      id: createId("mat"),
+      createdAt: new Date(),
+    };
     this.state.materials.set(record.id, record);
     return record;
   }
@@ -455,7 +460,7 @@ export class MemoryStore implements Store {
   }
 
   async getUsage(userId: string, day: string): Promise<UsageSnapshot> {
-    const snapshot: UsageSnapshot = { material: 0, question: 0, judgment: 0 };
+    const snapshot = {} as UsageSnapshot;
     for (const kind of Object.keys(QUOTA_LIMITS) as QuotaKind[]) {
       snapshot[kind] = this.state.usage.get(`${userId}::${day}::${kind}`) ?? 0;
     }
