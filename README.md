@@ -35,6 +35,8 @@ combine the probabilities in code. Every point in the final score can be audited
 
 ![Today's review: due cards scheduled by FSRS, tagged with last score, review and lapse counts](docs/screenshots/reviews-960.jpg)
 
+![Material Q&A: the answer cites each sentence, with a source list naming sentence and page plus verification notices](docs/screenshots/ask-960.jpg)
+
 > Screenshots come from the offline demo mode (the fallback engine used when no API key is configured), so
 > question style is mechanical and grading uses lexical overlap instead of Jev. With `TYPESAFE_API_KEY` the
 > UI is identical and the grading quality is not.
