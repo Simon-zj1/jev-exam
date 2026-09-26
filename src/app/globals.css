@@ -623,6 +623,16 @@ th {
   margin-bottom: 4px;
 }
 
+.dropzone > div {
+  /* 说明文字可以换行，但不能把按钮挤到逐字竖排 */
+  min-width: 0;
+}
+
+.dropzone button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
   .dropzone {
     flex-direction: column;
