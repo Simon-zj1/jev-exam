@@ -443,7 +443,8 @@ button:disabled {
 .meter {
   height: 8px;
   border-radius: 999px;
-  background: #eceff4;
+  /* 用语义变量：写死浅灰在深色模式下会变成一条刺眼的白条 */
+  background: var(--border);
   overflow: hidden;
 }
 
@@ -457,7 +458,7 @@ button:disabled {
 }
 
 .meter__fill--warn {
-  background: #e8a33d;
+  background: var(--warn);
 }
 
 .meter__fill--err {
