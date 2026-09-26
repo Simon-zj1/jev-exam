@@ -52,3 +52,21 @@
 - [candidates/](candidates/)：五个图标候选的 SVG（点睛 / 点石 / 点通 / 拾遗 / 点阵）。
 - [icon-candidates.html](icon-candidates.html)：候选对照页（大尺寸 + 40px 小尺寸 + 含义说明），
   截图见 [icon-candidates.png](icon-candidates.png)。
+
+### 形状 × 配色矩阵（第二版）
+
+配色不该被一个渐变锁死，所以形状与配色拆成两个独立维度：
+
+- [icon-palettes.html](icon-palettes.html)：4 个形状 × 6 套配色的矩阵，
+  含 104px 应用图标尺寸与 32px / 18px 的真实使用尺寸，截图见 [icon-palettes.png](icon-palettes.png)。
+- [candidates/](candidates/)：`<形状>-<配色>.svg`，例如 `eyedot-ink.svg`、`gap-paper.svg`，
+  24 个组合各自可用。
+
+| 配色 | 适合 | 代价 |
+| --- | --- | --- |
+| 墨 + 朱砂 Ink & Vermilion | 「点睛」这个名字的字面表达；文化感最强 | 深色底，浅色界面里需要描边或反白 |
+| 宣纸 Rice Paper | 浅色界面、阅读场景、文科人群 | 在深色模式里必须换版本 |
+| 靛蓝（扁平）Flat Indigo | 与现有页面主色一致，风险最小 | **单色无法表达「点睛」的两层结构，形状会退化成同心圆** |
+| 松墨绿 Pine | 长时间学习不刺眼，沉稳 | 绿色在「完成/正确」语义上与状态色冲突 |
+| 夜蓝 + 薄荷 Night & Mint | 深色模式原生 | 放进浅色界面会突兀 |
+| 莫兰迪雾色 Mist | 柔和、有审美 | 小尺寸对比度最弱，18px 几乎看不清 |

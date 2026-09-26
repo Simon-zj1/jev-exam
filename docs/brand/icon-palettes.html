@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>图标矩阵 · 形状 × 配色</title>
+<style>
+  :root { --ink:#15181e; --muted:#5c6472; --line:#e3e6eb; --bg:#f5f6f8; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:56px 64px 80px; background:var(--bg); color:var(--ink);
+         font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,sans-serif; }
+  h1 { font-size:30px; letter-spacing:-.4px; margin:0 0 8px; }
+  .sub { color:var(--muted); font-size:15px; line-height:1.75; max-width:78ch; margin:0 0 44px; }
+  h2 { font-size:14px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:600; margin:0 0 20px; }
+  .shape-head, .row { display:grid; grid-template-columns:286px repeat(4,104px); gap:24px; }
+  .shape-head { margin-bottom:8px; }
+  .shape-head div { font-size:12px; color:var(--muted); text-align:center; line-height:1.5; }
+  .shape-head div b { display:block; color:var(--ink); font-size:15px; }
+  .row { align-items:center; padding:22px 0; border-top:1px solid var(--line); }
+  .row:first-of-type { border-top:none; }
+  .label strong { font-size:16px; }
+  .label .en { display:block; font-size:12px; color:var(--muted); letter-spacing:.08em; margin:2px 0 6px; }
+  .label p { margin:0; font-size:13px; line-height:1.7; color:var(--muted); }
+  .cells { display:grid; grid-template-columns:repeat(4,104px); gap:24px; }
+  .art { border-radius:22%; overflow:hidden; box-shadow:0 1px 2px rgba(16,24,40,.07); }
+  .sizes { display:flex; gap:30px; align-items:flex-end; }
+  .sizes figure { margin:0; text-align:center; }
+  .sizes figcaption { font-size:11.5px; color:var(--muted); margin-top:8px; }
+  .section { margin-top:56px; }
+</style></head><body>
+  <h1>图标矩阵 · 形状 × 配色</h1>
+  <p class="sub">形状与配色是两件独立的事，所以分开挑：先看哪一列的形状说的是你要说的机制，
+  再看哪一行的底色适合你的界面与人群。同一形状在不同配色下的可读性差异，往往比形状本身的差异更大。</p>
+
+  <h2>104px — 应用图标尺寸</h2>
+  <div class="shape-head">
+    <div></div>
+    <div><b>点睛</b>Eyedot<br>整体 + 被点亮的那一个点</div><div><b>拾遗</b>Recall<br>缺口的环 + 缺口处那一点</div><div><b>点石</b>Touchstone<br>三条要点收束成一个判定</div><div><b>点通</b>Circuit<br>从没掌握到掌握，中间是要点</div>
+  </div>
+  
+    <div class="row">
+      <div class="label">
+        <strong>墨 + 朱砂</strong>
+        <span class="en">Ink & Vermilion</span>
+        <p>宣纸黑底，点睛处用朱砂。最贴「画龙点睛」的字面，也最不像又一个 AI 工具。</p>
+      </div>
+      <div class="cells">
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="墨 + 朱砂·点睛">
+<rect width="1024" height="1024" rx="248" fill="#15171B"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#F2EFE9" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#D8412F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="墨 + 朱砂·拾遗">
+<rect width="1024" height="1024" rx="248" fill="#15171B"/>
+<circle cx="512" cy="512" r="238" fill="none" stroke="#F2EFE9" stroke-width="74" stroke-linecap="round" stroke-dasharray="1128 366" transform="rotate(-58 512 512)" stroke-opacity="0.94"/><circle cx="806" cy="298" r="86" fill="#D8412F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="墨 + 朱砂·点石">
+<rect width="1024" height="1024" rx="248" fill="#15171B"/>
+<g fill="#F2EFE9"><rect x="196" y="338" width="286" height="66" rx="33"/><rect x="196" y="482" width="226" height="66" rx="33" opacity="0.85"/><rect x="196" y="626" width="166" height="66" rx="33" opacity="0.85"/></g><path d="M540 512 H620" stroke="#F2EFE9" stroke-width="34" stroke-linecap="round" opacity="0.6"/><circle cx="774" cy="512" r="106" fill="#D8412F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="墨 + 朱砂·点通">
+<rect width="1024" height="1024" rx="248" fill="#15171B"/>
+<circle cx="276" cy="512" r="86" fill="none" stroke="#F2EFE9" stroke-width="44" stroke-opacity="0.65"/><path d="M368 500 C 470 420, 560 420, 646 492" fill="none" stroke="#F2EFE9" stroke-width="30" stroke-linecap="round" stroke-opacity="0.8"/><circle cx="706" cy="524" r="118" fill="#D8412F"/>
+</svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <strong>宣纸</strong>
+        <span class="en">Rice Paper</span>
+        <p>米白纸底 + 墨色，像书页与印章。最克制、最耐看，浅色界面的天然选择。</p>
+      </div>
+      <div class="cells">
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="宣纸·点睛">
+<rect width="1024" height="1024" rx="248" fill="#F3F0E9"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#1C1F24" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#B4442F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="宣纸·拾遗">
+<rect width="1024" height="1024" rx="248" fill="#F3F0E9"/>
+<circle cx="512" cy="512" r="238" fill="none" stroke="#1C1F24" stroke-width="74" stroke-linecap="round" stroke-dasharray="1128 366" transform="rotate(-58 512 512)" stroke-opacity="0.94"/><circle cx="806" cy="298" r="86" fill="#B4442F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="宣纸·点石">
+<rect width="1024" height="1024" rx="248" fill="#F3F0E9"/>
+<g fill="#1C1F24"><rect x="196" y="338" width="286" height="66" rx="33"/><rect x="196" y="482" width="226" height="66" rx="33" opacity="0.85"/><rect x="196" y="626" width="166" height="66" rx="33" opacity="0.85"/></g><path d="M540 512 H620" stroke="#1C1F24" stroke-width="34" stroke-linecap="round" opacity="0.6"/><circle cx="774" cy="512" r="106" fill="#B4442F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="宣纸·点通">
+<rect width="1024" height="1024" rx="248" fill="#F3F0E9"/>
+<circle cx="276" cy="512" r="86" fill="none" stroke="#1C1F24" stroke-width="44" stroke-opacity="0.65"/><path d="M368 500 C 470 420, 560 420, 646 492" fill="none" stroke="#1C1F24" stroke-width="30" stroke-linecap="round" stroke-opacity="0.8"/><circle cx="706" cy="524" r="118" fill="#B4442F"/>
+</svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <strong>靛蓝（扁平）</strong>
+        <span class="en">Flat Indigo</span>
+        <p>去掉渐变，纯色 + 白。最小风险、最通用，与现有页面主色一致。</p>
+      </div>
+      <div class="cells">
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="靛蓝（扁平）·点睛">
+<rect width="1024" height="1024" rx="248" fill="#2F5BFF"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#FFFFFF" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#FFFFFF"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="靛蓝（扁平）·拾遗">
+<rect width="1024" height="1024" rx="248" fill="#2F5BFF"/>
+<circle cx="512" cy="512" r="238" fill="none" stroke="#FFFFFF" stroke-width="74" stroke-linecap="round" stroke-dasharray="1128 366" transform="rotate(-58 512 512)" stroke-opacity="0.94"/><circle cx="806" cy="298" r="86" fill="#FFFFFF"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="靛蓝（扁平）·点石">
+<rect width="1024" height="1024" rx="248" fill="#2F5BFF"/>
+<g fill="#FFFFFF"><rect x="196" y="338" width="286" height="66" rx="33"/><rect x="196" y="482" width="226" height="66" rx="33" opacity="0.85"/><rect x="196" y="626" width="166" height="66" rx="33" opacity="0.85"/></g><path d="M540 512 H620" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" opacity="0.6"/><circle cx="774" cy="512" r="106" fill="#FFFFFF"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="靛蓝（扁平）·点通">
+<rect width="1024" height="1024" rx="248" fill="#2F5BFF"/>
+<circle cx="276" cy="512" r="86" fill="none" stroke="#FFFFFF" stroke-width="44" stroke-opacity="0.65"/><path d="M368 500 C 470 420, 560 420, 646 492" fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" stroke-opacity="0.8"/><circle cx="706" cy="524" r="118" fill="#FFFFFF"/>
+</svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <strong>松墨绿</strong>
+        <span class="en">Pine</span>
+        <p>深墨绿 + 米白 + 一点琥珀，镇定、耐看，长时间学习不刺眼。</p>
+      </div>
+      <div class="cells">
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="松墨绿·点睛">
+<rect width="1024" height="1024" rx="248" fill="#173A2F"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#EDF1EC" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#E4B34C"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="松墨绿·拾遗">
+<rect width="1024" height="1024" rx="248" fill="#173A2F"/>
+<circle cx="512" cy="512" r="238" fill="none" stroke="#EDF1EC" stroke-width="74" stroke-linecap="round" stroke-dasharray="1128 366" transform="rotate(-58 512 512)" stroke-opacity="0.94"/><circle cx="806" cy="298" r="86" fill="#E4B34C"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="松墨绿·点石">
+<rect width="1024" height="1024" rx="248" fill="#173A2F"/>
+<g fill="#EDF1EC"><rect x="196" y="338" width="286" height="66" rx="33"/><rect x="196" y="482" width="226" height="66" rx="33" opacity="0.85"/><rect x="196" y="626" width="166" height="66" rx="33" opacity="0.85"/></g><path d="M540 512 H620" stroke="#EDF1EC" stroke-width="34" stroke-linecap="round" opacity="0.6"/><circle cx="774" cy="512" r="106" fill="#E4B34C"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="松墨绿·点通">
+<rect width="1024" height="1024" rx="248" fill="#173A2F"/>
+<circle cx="276" cy="512" r="86" fill="none" stroke="#EDF1EC" stroke-width="44" stroke-opacity="0.65"/><path d="M368 500 C 470 420, 560 420, 646 492" fill="none" stroke="#EDF1EC" stroke-width="30" stroke-linecap="round" stroke-opacity="0.8"/><circle cx="706" cy="524" r="118" fill="#E4B34C"/>
+</svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <strong>夜蓝 + 薄荷</strong>
+        <span class="en">Night & Mint</span>
+        <p>近黑底 + 薄荷前景，天生属于深色模式；放进浅色界面会显得突兀。</p>
+      </div>
+      <div class="cells">
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="夜蓝 + 薄荷·点睛">
+<rect width="1024" height="1024" rx="248" fill="#0E1621"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#4BE3C0" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#FFD166"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="夜蓝 + 薄荷·拾遗">
+<rect width="1024" height="1024" rx="248" fill="#0E1621"/>
+<circle cx="512" cy="512" r="238" fill="none" stroke="#4BE3C0" stroke-width="74" stroke-linecap="round" stroke-dasharray="1128 366" transform="rotate(-58 512 512)" stroke-opacity="0.94"/><circle cx="806" cy="298" r="86" fill="#FFD166"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="夜蓝 + 薄荷·点石">
+<rect width="1024" height="1024" rx="248" fill="#0E1621"/>
+<g fill="#4BE3C0"><rect x="196" y="338" width="286" height="66" rx="33"/><rect x="196" y="482" width="226" height="66" rx="33" opacity="0.85"/><rect x="196" y="626" width="166" height="66" rx="33" opacity="0.85"/></g><path d="M540 512 H620" stroke="#4BE3C0" stroke-width="34" stroke-linecap="round" opacity="0.6"/><circle cx="774" cy="512" r="106" fill="#FFD166"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="夜蓝 + 薄荷·点通">
+<rect width="1024" height="1024" rx="248" fill="#0E1621"/>
+<circle cx="276" cy="512" r="86" fill="none" stroke="#4BE3C0" stroke-width="44" stroke-opacity="0.65"/><path d="M368 500 C 470 420, 560 420, 646 492" fill="none" stroke="#4BE3C0" stroke-width="30" stroke-linecap="round" stroke-opacity="0.8"/><circle cx="706" cy="524" r="118" fill="#FFD166"/>
+</svg></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <strong>莫兰迪雾色</strong>
+        <span class="en">Mist</span>
+        <p>低饱和灰蓝 + 陶土点睛，柔和有审美，但小尺寸下对比度最弱。</p>
+      </div>
+      <div class="cells">
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="莫兰迪雾色·点睛">
+<rect width="1024" height="1024" rx="248" fill="#96A1AE"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#F7F5F1" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#C4643F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="莫兰迪雾色·拾遗">
+<rect width="1024" height="1024" rx="248" fill="#96A1AE"/>
+<circle cx="512" cy="512" r="238" fill="none" stroke="#F7F5F1" stroke-width="74" stroke-linecap="round" stroke-dasharray="1128 366" transform="rotate(-58 512 512)" stroke-opacity="0.94"/><circle cx="806" cy="298" r="86" fill="#C4643F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="莫兰迪雾色·点石">
+<rect width="1024" height="1024" rx="248" fill="#96A1AE"/>
+<g fill="#F7F5F1"><rect x="196" y="338" width="286" height="66" rx="33"/><rect x="196" y="482" width="226" height="66" rx="33" opacity="0.85"/><rect x="196" y="626" width="166" height="66" rx="33" opacity="0.85"/></g><path d="M540 512 H620" stroke="#F7F5F1" stroke-width="34" stroke-linecap="round" opacity="0.6"/><circle cx="774" cy="512" r="106" fill="#C4643F"/>
+</svg></div>
+        <div class="art" style="width:104px;height:104px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="104" height="104" role="img" aria-label="莫兰迪雾色·点通">
+<rect width="1024" height="1024" rx="248" fill="#96A1AE"/>
+<circle cx="276" cy="512" r="86" fill="none" stroke="#F7F5F1" stroke-width="44" stroke-opacity="0.65"/><path d="M368 500 C 470 420, 560 420, 646 492" fill="none" stroke="#F7F5F1" stroke-width="30" stroke-linecap="round" stroke-opacity="0.8"/><circle cx="706" cy="524" r="118" fill="#C4643F"/>
+</svg></div>
+      </div>
+    </div>
+
+  <div class="section">
+    <h2>小尺寸 — 顶栏与标签页的真实大小</h2>
+    
+    <div class="sizes">
+      <figure><div class="art" style="width:32px;height:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32" role="img" aria-label="墨 + 朱砂·点睛">
+<rect width="1024" height="1024" rx="248" fill="#15171B"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#F2EFE9" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#D8412F"/>
+</svg></div><figcaption>墨 + 朱砂 · 32px</figcaption></figure>
+      <figure><div class="art" style="width:32px;height:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32" role="img" aria-label="宣纸·点睛">
+<rect width="1024" height="1024" rx="248" fill="#F3F0E9"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#1C1F24" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#B4442F"/>
+</svg></div><figcaption>宣纸 · 32px</figcaption></figure>
+      <figure><div class="art" style="width:32px;height:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32" role="img" aria-label="靛蓝（扁平）·点睛">
+<rect width="1024" height="1024" rx="248" fill="#2F5BFF"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#FFFFFF" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#FFFFFF"/>
+</svg></div><figcaption>靛蓝（扁平） · 32px</figcaption></figure>
+      <figure><div class="art" style="width:32px;height:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32" role="img" aria-label="松墨绿·点睛">
+<rect width="1024" height="1024" rx="248" fill="#173A2F"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#EDF1EC" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#E4B34C"/>
+</svg></div><figcaption>松墨绿 · 32px</figcaption></figure>
+      <figure><div class="art" style="width:32px;height:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32" role="img" aria-label="夜蓝 + 薄荷·点睛">
+<rect width="1024" height="1024" rx="248" fill="#0E1621"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#4BE3C0" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#FFD166"/>
+</svg></div><figcaption>夜蓝 + 薄荷 · 32px</figcaption></figure>
+      <figure><div class="art" style="width:32px;height:32px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="32" height="32" role="img" aria-label="莫兰迪雾色·点睛">
+<rect width="1024" height="1024" rx="248" fill="#96A1AE"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#F7F5F1" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#C4643F"/>
+</svg></div><figcaption>莫兰迪雾色 · 32px</figcaption></figure>
+    </div>
+    <div style="height:22px"></div>
+    
+    <div class="sizes">
+      <figure><div class="art" style="width:18px;height:18px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="18" height="18" role="img" aria-label="墨 + 朱砂·点睛">
+<rect width="1024" height="1024" rx="248" fill="#15171B"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#F2EFE9" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#D8412F"/>
+</svg></div><figcaption>墨 + 朱砂 · 18px</figcaption></figure>
+      <figure><div class="art" style="width:18px;height:18px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="18" height="18" role="img" aria-label="宣纸·点睛">
+<rect width="1024" height="1024" rx="248" fill="#F3F0E9"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#1C1F24" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#B4442F"/>
+</svg></div><figcaption>宣纸 · 18px</figcaption></figure>
+      <figure><div class="art" style="width:18px;height:18px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="18" height="18" role="img" aria-label="靛蓝（扁平）·点睛">
+<rect width="1024" height="1024" rx="248" fill="#2F5BFF"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#FFFFFF" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#FFFFFF"/>
+</svg></div><figcaption>靛蓝（扁平） · 18px</figcaption></figure>
+      <figure><div class="art" style="width:18px;height:18px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="18" height="18" role="img" aria-label="松墨绿·点睛">
+<rect width="1024" height="1024" rx="248" fill="#173A2F"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#EDF1EC" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#E4B34C"/>
+</svg></div><figcaption>松墨绿 · 18px</figcaption></figure>
+      <figure><div class="art" style="width:18px;height:18px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="18" height="18" role="img" aria-label="夜蓝 + 薄荷·点睛">
+<rect width="1024" height="1024" rx="248" fill="#0E1621"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#4BE3C0" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#FFD166"/>
+</svg></div><figcaption>夜蓝 + 薄荷 · 18px</figcaption></figure>
+      <figure><div class="art" style="width:18px;height:18px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="18" height="18" role="img" aria-label="莫兰迪雾色·点睛">
+<rect width="1024" height="1024" rx="248" fill="#96A1AE"/>
+<circle cx="512" cy="512" r="236" fill="none" stroke="#F7F5F1" stroke-width="72" stroke-opacity="0.92"/><circle cx="512" cy="512" r="106" fill="#C4643F"/>
+</svg></div><figcaption>莫兰迪雾色 · 18px</figcaption></figure>
+    </div>
+  </div>
+</body></html>
