@@ -39,14 +39,14 @@ export default async function MaterialsPage() {
             <MaterialForm />
           </section>
 
-          <section className="card">
+          <section>
             <h2>已有材料</h2>
             {materials.length === 0 ? (
               <div className="empty">还没有材料。左侧粘贴一段要考的内容即可开始。</div>
             ) : (
-              <div className="stack">
+              <div className="list">
                 {materials.map((material) => (
-                  <div key={material.id} className="row row--between">
+                  <div key={material.id} className="list__row">
                     <div>
                       <Link href={`/materials/${material.id}`}>{material.title}</Link>
                       <div className="small muted">

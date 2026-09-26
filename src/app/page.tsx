@@ -22,91 +22,102 @@ export default async function HomePage() {
         <TopBar user={null} />
         <main className="shell">
           <section className="hero">
-            <span className="pill">上传资料就能考你</span>
+            <p className="hero__eyebrow">用自己的资料，考自己</p>
             <h1>把资料变成考卷，做完告诉你哪里没学会</h1>
-            <p>
-              上传你自己的教材、笔记或讲义（PDF / Word / 纯文本都行），系统自动出题；
-              你答完，它按得分点逐条批改，明确指出你漏掉了哪一个要点。看不懂的地方可以就材料追问，
-              回答逐句标注出处；错题会按间隔重复排期，告诉你什么时候该再看一遍。
-              学习内容完全由你决定，资料只存在你自己的账号里，随时可以导出。
+            <p className="lede">
+              上传教材、笔记或讲义（PDF / Word / 纯文本都行），自动出题；答完按得分点逐条批改，
+              明确指出你漏掉了哪一个要点。看不懂可以就材料追问，回答逐句标注出处；
+              错题按间隔重复排期，告诉你什么时候该再看一遍。
             </p>
-            <div className="row">
-              <Link className="pill" href="/login">
-                邀请码登录 →
+            <div className="hero__actions">
+              <Link className="btn btn--primary" href="/login">
+                用邀请码登录
               </Link>
-              <span className="small muted">
-                当前未配置模型，使用内置演示模式（可在设置里换成你自己的模型 Key）
-              </span>
+              <a className="btn btn--quiet" href="/demo/jev-exam-report.html">
+                先看一份示例报告
+              </a>
+            </div>
+            {status.demoMode ? (
+              <p className="small muted" style={{ marginTop: "var(--s4)", marginBottom: 0 }}>
+                当前实例未配置模型，使用内置演示模式；登录后可在设置里换成自己的模型 Key。
+              </p>
+            ) : null}
+          </section>
+
+          <section className="section">
+            <div className="principles">
+              <div className="principle">
+                <span className="principle__index">01</span>
+                <h3>读懂你的资料</h3>
+                <p>先把内容拆成知识点再出题，每道题都能回到原文的某一句话，你可以随时核对它有没有乱编。</p>
+              </div>
+              <div className="principle">
+                <span className="principle__index">02</span>
+                <h3>两种题分别批改</h3>
+                <p>选择、判断对错分明，直接判；简答按「得分点」逐条看你说到了没有，而不是笼统给一个分数。</p>
+              </div>
+              <div className="principle">
+                <span className="principle__index">03</span>
+                <h3>不确定会直说</h3>
+                <p>模型没把握的题会标成「待复核」并给出分数范围，同时不计入掌握度，不用假确定的分数误导复习。</p>
+              </div>
             </div>
           </section>
 
-          <section className="grid grid--3">
-            <div className="card">
-              <h3>1. 读懂你的资料</h3>
-              <p className="small muted">
-                先把你上传的内容拆成知识点，再据此出题。每道题都能回到原文的某一句话，
-                你随时可以核对它有没有乱编。
-              </p>
-            </div>
-            <div className="card">
-              <h3>2. 两种题分别批改</h3>
-              <p className="small muted">
-                选择题、判断题对错分明，直接判；简答题按「得分点」逐条看你说到了没有，
-                而不是笼统给一个分数。
-              </p>
-            </div>
-            <div className="card">
-              <h3>3. 不确定会直接告诉你</h3>
-              <p className="small muted">
-                模型没把握的题目会标成「待复核」并给出分数范围，同时不计入你的掌握度，
-                不会用假装确定的分数误导复习方向。
-              </p>
-            </div>
-          </section>
-
-          <section className="card">
+          <section className="section">
             <h2>为什么不用 ChatGPT 或 NotebookLM？</h2>
-            <p className="small muted">
+            <p className="section__hint">
               它们很擅长「读」和「讲」，但你要的是「练」和「知道自己哪里不会」。四件具体的事：
             </p>
-            <div className="grid grid--2">
-              <div>
-                <h3>判定可核对，不是给个分</h3>
-                <p className="small muted">
-                  ChatGPT 给你一个听起来合理的分数，你无法核对；这里把简答题拆成得分点逐条判定，
-                  每一条都能回到材料原文，判不准的题会标成「待复核」而不是硬给分。
-                </p>
+            <div className="compare">
+              <div className="compare__row">
+                <div className="compare__side">
+                  <h3>通用助手</h3>
+                  <p>给一个听起来合理的分数，你无法核对；写完就结束，不记得你上周错在哪。</p>
+                </div>
+                <div className="compare__side compare__side--ours">
+                  <h3>这里：逐点判定 + 复习闭环</h3>
+                  <p>
+                    简答题拆成得分点逐条判定，每条都能回到原文；判不准就标「待复核」。
+                    错题自动进入 FSRS 排期，每天只让你看该看的那几张卡。
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3>有复习闭环，不只是当场问答</h3>
-                <p className="small muted">
-                  NotebookLM 帮你整理资料，但不会记得你上周错在哪。这里错题自动进入
-                  FSRS 复习排期，每天只让你看该看的那几张卡。
-                </p>
+              <div className="compare__row">
+                <div className="compare__side">
+                  <h3>资料与答案分离</h3>
+                  <p>先转成纯文本、再手动对照，出处要自己找。</p>
+                </div>
+                <div className="compare__side compare__side--ours">
+                  <h3>这里：上传即用，答案带出处</h3>
+                  <p>
+                    直接上传 PDF / Word；追问的回答逐句带引注，PDF 还能点到「第几页」，
+                    材料里没有的会直接说没有。
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3>上传就能考，答案带出处</h3>
-                <p className="small muted">
-                  直接上传 PDF 或 Word，不用先转文本；追问时回答逐句带引注，
-                  PDF 还能点到「第几页」，材料里没有的会直接说没有。
-                </p>
-              </div>
-              <div>
-                <h3>数据在你自己手里</h3>
-                <p className="small muted">
-                  材料、错题、掌握度随时可导出成 Markdown、Anki CSV 或完整备份，
-                  账号也能一键删除。想走随时走，不用怕被锁住。
-                </p>
+              <div className="compare__row">
+                <div className="compare__side">
+                  <h3>数据留在别人那里</h3>
+                  <p>内容进得去、出不来，想换工具只能重来。</p>
+                </div>
+                <div className="compare__side compare__side--ours">
+                  <h3>这里：数据在你手里</h3>
+                  <p>
+                    材料、错题、掌握度随时导出 Markdown、Anki CSV 或完整备份，账号一键删除。
+                    想走随时走。
+                  </p>
+                </div>
               </div>
             </div>
-            <p className="small muted">
+            <p className="section__hint" style={{ marginTop: "var(--s5)", marginBottom: 0 }}>
               反过来，如果你要的是写作、头脑风暴或者开放式讨论，通用助手更合适——
               这里的强项只有一件：把你自己的材料变成一场可核对、会排期的考试。
             </p>
           </section>
 
-          <section className="card">
-            <details>
+          <section className="section">
+            <details className="section__disclosure">
               <summary className="muted">技术细节：为什么不让大模型直接打个分？（给开发者）</summary>
               <p className="small muted" style={{ marginTop: 12 }}>
                 一句话：直接打分得到的是一个无法核对的黑盒数字。这里改成把主观题拆成
@@ -147,7 +158,7 @@ export default async function HomePage() {
             </details>
           </section>
 
-          <p className="small muted">
+          <p className="small muted" style={{ paddingTop: "var(--s5)" }}>
             使用本站即表示同意 <Link href="/terms">服务条款</Link> 与{" "}
             <Link href="/privacy">隐私说明</Link>。
           </p>
@@ -169,12 +180,27 @@ export default async function HomePage() {
   return (
     <>
       <TopBar user={user} />
-      <main className="shell" style={{ paddingTop: 24 }}>
-        <h1>开始一次自助考试</h1>
-        <p className="muted small">
-          判定引擎：{status.judgeLabel} · 出题：{status.generatorLabel}
-          {status.demoMode ? "（离线演示模式，质量不代表真实 Jev）" : ""}
-        </p>
+      <main className="shell" style={{ paddingTop: "var(--s6)" }}>
+        <header className="page-head">
+          <div>
+            <h1>开始一次自助考试</h1>
+            <p className="small muted" style={{ margin: 0 }}>
+              判定引擎：{status.judgeLabel} · 出题：{status.generatorLabel}
+              {status.generatorModel ? `（${status.generatorModel}）` : ""}
+              {status.demoMode ? " · 离线演示模式，质量不代表真实 Jev" : ""}
+            </p>
+          </div>
+          <div className="row">
+            <Link className="btn btn--primary" href="/materials">
+              上传新材料
+            </Link>
+            {reviews.due > 0 ? (
+              <Link className="btn" href="/reviews">
+                复习 {reviews.due} 张
+              </Link>
+            ) : null}
+          </div>
+        </header>
 
         {status.demoMode ? (
           <div className="banner banner--warn">
@@ -187,70 +213,53 @@ export default async function HomePage() {
                   两分钟完成，密钥只存在你自己的账号下。
                 </div>
               </div>
-              <Link className="pill pill--warn" href="/settings">
-                去配置模型 →
+              <Link className="btn" href="/settings">
+                去配置模型
               </Link>
             </div>
           </div>
         ) : null}
 
-        <div className="grid grid--2">
-          <section className="card">
-            <QuotaCard usage={quota.usage} byokActive={Boolean(readByok(user))} />
-            <div className="divider" />
-            <div className="row">
-              <Link className="pill" href="/materials">
-                上传新材料 →
-              </Link>
-              <Link className="pill" href="/mistakes">
-                查看错题本 →
-              </Link>
+        <div className="statband">
+          <div>
+            <div className="statband__label">今日待复习</div>
+            <div className="statband__value">{reviews.due}</div>
+          </div>
+          <div>
+            <div className="statband__label">复习队列</div>
+            <div className="statband__value">{reviews.total}</div>
+          </div>
+          <div>
+            <div className="statband__label">待复核</div>
+            <div className="statband__value">
+              {exams.reduce((sum, item) => sum + (item.latestAttempt?.needsReviewCount ?? 0), 0)}
             </div>
-          </section>
-          <section className="card">
-            <div className="row row--between">
-              <strong>学习概况</strong>
-              <span className="small muted">材料 {materials.length} 份</span>
+          </div>
+          <div>
+            <div className="statband__label">材料</div>
+            <div className="statband__value">{materials.length}</div>
+          </div>
+          <div>
+            <div className="statband__label">今日额度剩余</div>
+            <div className="statband__value">
+              {Math.max(0, quota.limits.question - quota.usage.question)}
             </div>
-            <div className="grid grid--3" style={{ marginTop: 8 }}>
-              <div>
-                <div className="small muted">今日待复习</div>
-                <div className="score">{reviews.due}</div>
-              </div>
-              <div>
-                <div className="small muted">复习队列</div>
-                <div className="score">{reviews.total}</div>
-              </div>
-              <div>
-                <div className="small muted">待复核</div>
-                <div className="score">
-                  {exams.reduce((sum, item) => sum + (item.latestAttempt?.needsReviewCount ?? 0), 0)}
-                </div>
-              </div>
-            </div>
-            {reviews.due > 0 ? (
-              <div className="row" style={{ marginTop: 12 }}>
-                <Link className="pill pill--warn" href="/reviews">
-                  开始复习 {reviews.due} 张卡片 →
-                </Link>
-              </div>
-            ) : null}
-            <p className="small muted" style={{ marginTop: 10, marginBottom: 0 }}>
-              判定引擎：{status.judgeLabel}；出题：{status.generatorLabel}
-              {status.generatorModel ? `（${status.generatorModel}）` : ""}
-            </p>
-          </section>
+          </div>
         </div>
 
-        <div className="grid grid--2">
-          <section className="card">
+        <section className="section" style={{ paddingTop: "var(--s5)" }}>
+          <QuotaCard usage={quota.usage} byokActive={Boolean(readByok(user))} />
+        </section>
+
+        <div className="grid grid--2" style={{ marginTop: "var(--s6)" }}>
+          <section>
             <h2>最近的试卷</h2>
             {recent.length === 0 ? (
               <div className="empty">还没有试卷，先上传材料。</div>
             ) : (
-              <div className="stack">
+              <div className="list">
                 {recent.map((summary) => (
-                  <div key={summary.exam.id} className="row row--between">
+                  <div key={summary.exam.id} className="list__row">
                     <div>
                       <strong>{summary.exam.title}</strong>
                       <div className="small muted">
@@ -275,7 +284,7 @@ export default async function HomePage() {
             )}
           </section>
 
-          <section className="card">
+          <section>
             <h2>薄弱点</h2>
             {weak.length === 0 ? (
               <div className="empty">还没有掌握度数据。</div>

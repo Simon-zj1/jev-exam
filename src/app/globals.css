@@ -5,6 +5,7 @@
   --text: #15181e;
   --muted: #5c6472;
   --border: #e3e6eb;
+  --border-strong: #d3d8e0;
   --brand: #2f5bff;
   --brand-soft: #eef2ff;
   --ok: #12805c;
@@ -14,7 +15,24 @@
   --err: #b42318;
   --err-soft: #fef3f2;
   --radius: 14px;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+  /* 阴影只用来表达「这是一块浮起来的东西」，越少越好 */
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-raised: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 30px rgba(16, 24, 40, 0.07);
+
+  /* 间距只用这条 4px 基准的梯子，避免出现 14 / 18 / 22 这种随手写的数值 */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --s8: 72px;
+
+  /* 阅读行宽：正文超过这个宽度就开始难读 */
+  --measure: 66ch;
 }
 
 /* 深色模式：同一套语义变量整体翻转，组件样式不改 */
@@ -33,7 +51,9 @@ html[data-theme="dark"] {
   --warn-soft: #2a2313;
   --err: #ff8b7d;
   --err-soft: #2b1a18;
+  --border-strong: #333a45;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.35);
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 html[data-theme="dark"] .topbar {
@@ -99,9 +119,9 @@ p {
 }
 
 .shell {
-  max-width: 1080px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 0 20px 64px;
+  padding: 0 var(--s5) var(--s8);
 }
 
 .topbar {
@@ -114,7 +134,7 @@ p {
 }
 
 .topbar__inner {
-  max-width: 1080px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 12px 20px;
   display: flex;
@@ -127,6 +147,19 @@ p {
   color: var(--text);
   font-size: 16px;
   letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  text-decoration: none;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: block;
+  flex: 0 0 auto;
 }
 
 .brand span {
@@ -137,12 +170,22 @@ p {
   display: flex;
   gap: 14px;
   margin-left: 8px;
+  /* 导航可以被压缩并横向滚动，否则窄屏会把右侧挤到换行 */
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav a {
   color: var(--muted);
   font-size: 14px;
   padding: 4px 2px;
+  white-space: nowrap;
 }
 
 .nav a:hover {
@@ -157,15 +200,20 @@ p {
   gap: 12px;
   color: var(--muted);
   font-size: 13px;
+  flex: 0 0 auto;
+}
+
+.topbar__right a {
+  white-space: nowrap;
 }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: var(--s5);
   box-shadow: var(--shadow);
-  margin-bottom: 18px;
+  margin-bottom: var(--s4);
 }
 
 .card--flat {
@@ -451,18 +499,50 @@ th {
 }
 
 .hero {
-  padding: 40px 0 28px;
+  padding: var(--s8) 0 0;
 }
 
 .hero h1 {
-  font-size: 34px;
-  letter-spacing: -0.4px;
+  font-size: 38px;
+  letter-spacing: -0.8px;
+  line-height: 1.22;
+  max-width: 22ch;
+  margin-bottom: var(--s4);
 }
 
-.hero p {
-  color: var(--muted);
-  max-width: 720px;
-  font-size: 16px;
+.hero__eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: var(--s3);
+  font-weight: 600;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  margin-top: var(--s6);
+}
+
+.section__disclosure {
+  border-top: 1px solid var(--border);
+  padding-top: var(--s4);
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding-top: var(--s7);
+  }
+  .hero h1 {
+    font-size: 29px;
+    max-width: none;
+  }
+  .lede {
+    font-size: 16px;
+  }
 }
 
 .code-block {
@@ -533,16 +613,12 @@ th {
 
   .brand {
     white-space: nowrap;
+    font-size: 15px;
   }
 
   .nav {
-    gap: 12px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
+    gap: 11px;
+    margin-left: 2px;
   }
 
   .nav a {
@@ -597,6 +673,220 @@ th {
   font-size: 13px;
   line-height: 1.7;
   white-space: normal;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   版式系统
+
+   一条规则：**盒子只给需要被框起来的东西**（表单、题目、可交互面板）。
+   说明性内容用留白与细分割线分组，不再每段套一张卡片。
+   ───────────────────────────────────────────────────────────── */
+
+.prose {
+  max-width: var(--measure);
+}
+
+/* 页头：标题在左、动作在右，窄屏自动堆叠 */
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  margin-bottom: var(--s5);
+}
+
+.page-head h1 {
+  margin-bottom: var(--s1);
+}
+
+.lede {
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: var(--measure);
+}
+
+/* 无边框分区：靠细线与留白分组 */
+.section {
+  padding: var(--s6) 0 0;
+  margin-top: var(--s6);
+  border-top: 1px solid var(--border);
+}
+
+.section:first-child {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+.section > h2 {
+  font-size: 21px;
+  letter-spacing: -0.2px;
+  margin-bottom: var(--s2);
+}
+
+.section > .section__hint {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: var(--measure);
+  margin-bottom: var(--s5);
+}
+
+/* 真正的行动按钮：与状态标签（pill）分开，避免把 pill 当按钮用 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--border-strong);
+  text-decoration: none;
+}
+
+.btn--primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn--primary:hover {
+  background: #2450e8;
+  border-color: #2450e8;
+}
+
+.btn--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.btn--quiet:hover {
+  color: var(--brand);
+}
+
+/* 编号原则：不用盒子，用序号 + 细线 */
+.principles {
+  display: grid;
+  gap: var(--s6);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.principle {
+  border-top: 1px solid var(--border-strong);
+  padding-top: var(--s3);
+}
+
+.principle__index {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--brand);
+  margin-bottom: var(--s2);
+}
+
+.principle h3 {
+  font-size: 16px;
+  margin-bottom: var(--s1);
+}
+
+.principle p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* 对照表：左「常见做法」右「这里的做法」，一行一事 */
+.compare {
+  display: grid;
+  gap: 0;
+}
+
+.compare__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s5);
+  padding: var(--s4) 0;
+  border-top: 1px solid var(--border);
+}
+
+.compare__row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.compare__row h3 {
+  font-size: 15px;
+  margin-bottom: var(--s1);
+}
+
+.compare__row p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.compare__side--ours p {
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  .compare__row {
+    grid-template-columns: 1fr;
+    gap: var(--s3);
+  }
+}
+
+/* 仪表盘数字带：一行读数，不占一整个盒子 */
+.statband {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  gap: var(--s4);
+  padding: var(--s4) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.statband__label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: var(--s1);
+}
+
+.statband__value {
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+}
+
+/* 细线分隔的列表，替代「每行一个盒子」 */
+.list {
+  display: grid;
+}
+
+.list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  padding: var(--s3) 0;
+  border-top: 1px solid var(--border);
+}
+
+.list__row:first-child {
+  border-top: none;
 }
 
 /* 上传解析：拖放区在移动端退化为整块可点，避免手指够不到按钮 */

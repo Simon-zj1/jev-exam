@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { UserRecord } from "@/lib/db/types";
+import { BrandMark } from "@/components/brand-mark";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -8,6 +9,7 @@ export function TopBar({ user }: { user: UserRecord | null }) {
     <header className="topbar">
       <div className="topbar__inner">
         <Link href="/" className="brand">
+          <BrandMark size={22} />
           Jev<span>备考</span>
         </Link>
         <nav className="nav">
