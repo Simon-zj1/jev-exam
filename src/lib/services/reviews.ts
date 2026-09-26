@@ -11,9 +11,12 @@ import {
 } from "@/lib/fsrs";
 import { gradeQuestion, type AnswerPayload } from "@/lib/grading";
 import { topicKeyOf } from "@/lib/ids";
+import { interleaveByTopic } from "@/lib/interleave";
+import { usageCollector } from "@/lib/llm/usage";
 import { assertQuota, recordUsage } from "@/lib/quota";
 import { readByok } from "@/lib/services/byok";
 import { toGeneratedQuestion, toStudentQuestion } from "@/lib/services/questions";
+import { recordChatUsage } from "@/lib/services/usage";
 
 /** 低于这个分数算「没掌握」，会进入复习队列 */
 const MISTAKE_THRESHOLD_PERCENT = 60;
@@ -178,7 +181,7 @@ export async function listDueReviewCards(
   const questions = await store.getQuestions(items.map((item) => item.questionId));
   const questionById = new Map(questions.map((question) => [question.id, question]));
 
-  return items
+  const cards = items
     .map((item) => {
       const question = questionById.get(item.questionId);
       if (!question) return null;
@@ -190,6 +193,9 @@ export async function listDueReviewCards(
       } satisfies DueReviewCard;
     })
     .filter((card): card is DueReviewCard => Boolean(card));
+
+  // 到期时间只决定「今天要不要出现」，出现顺序再按知识点打散（交错练习）
+  return interleaveByTopic(cards, (card) => card.item.topicKey);
 }
 
 export async function reviewStats(user: UserRecord, now: Date = new Date()): Promise<ReviewStats> {
@@ -218,7 +224,8 @@ export async function gradeReviewAnswer(
   const store = getStore();
 
   const byok = readByok(user);
-  const selection = resolveDecisionEngine({ byok });
+  const usage = usageCollector();
+  const selection = resolveDecisionEngine({ byok, onChatUsage: usage.onChatUsage });
   const needsEngine = question.type === "short_answer" || question.type === "cloze";
   if (selection.countsAgainstQuota && needsEngine) await assertQuota(user.id, { judgment: 1 });
 
@@ -226,10 +233,15 @@ export async function gradeReviewAnswer(
   const materialExcerpt =
     blueprint?.topics.find((topic) => topic.id === question.topicId)?.source_spans.join("\n") ?? "";
 
-  const judgment = await gradeQuestion(toGeneratedQuestion(question), payload, {
-    engine: selection.engine,
-    materialExcerpt,
-  });
+  let judgment;
+  try {
+    judgment = await gradeQuestion(toGeneratedQuestion(question), payload, {
+      engine: selection.engine,
+      materialExcerpt,
+    });
+  } finally {
+    await recordChatUsage(user.id, usage.pending);
+  }
   if (selection.countsAgainstQuota && judgment.usedEngine) {
     await recordUsage(user.id, { judgment: 1 });
   }

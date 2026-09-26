@@ -11,7 +11,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import type { AnswerPayload } from "@/lib/grading";
-import type { ExamConfigRecord } from "@/lib/db/types";
+import type { ExamConfigRecord, FeedbackSnapshot } from "@/lib/db/types";
 import type { SourceMap } from "@/lib/ingest/types";
 import type {
   AnswerKey,
@@ -220,6 +220,46 @@ export const usageCounters = pgTable(
     amount: integer("amount").notNull().default(0),
   },
   (table) => [primaryKey({ columns: [table.userId, table.day, table.kind] })],
+);
+
+/**
+ * 模型调用的 token 与费用记录（按天 + 模型聚合）。
+ * 存微美元整数而不是浮点，避免累加出现分位漂移。
+ */
+export const llmUsage = pgTable(
+  "llm_usage",
+  {
+    userId: text("user_id").notNull(),
+    day: text("day").notNull(),
+    model: text("model").notNull(),
+    calls: integer("calls").notNull().default(0),
+    inputTokens: integer("input_tokens").notNull().default(0),
+    outputTokens: integer("output_tokens").notNull().default(0),
+    costMicroUsd: integer("cost_micro_usd").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.day, table.model] })],
+);
+
+/**
+ * 用户对判定结果的纠错上报。
+ *
+ * `snapshot` 存下当时的题目、作答、逐点判分与引擎版本：判定逻辑会迭代，
+ * 只存 questionId 的话，三个月后回看这条反馈已经无法复原当时到底判了什么。
+ */
+export const feedbackReports = pgTable(
+  "feedback_reports",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    questionId: text("question_id").notNull(),
+    attemptId: text("attempt_id"),
+    kind: text("kind").notNull(),
+    note: text("note"),
+    snapshot: jsonb("snapshot").$type<FeedbackSnapshot>().notNull(),
+    status: text("status").notNull().default("open"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("feedback_reports_user_idx").on(table.userId, table.createdAt)],
 );
 
 /**

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { PrintButton } from "@/components/print-button";
+import { ReportWrongButton } from "@/components/report-wrong-button";
 import { RetryMistakesButton } from "@/components/retry-mistakes-button";
 import { TopBar } from "@/components/top-bar";
 import { getCurrentUser } from "@/lib/auth/session";
@@ -259,6 +260,8 @@ export default async function AttemptResultPage({ params }: { params: Promise<{ 
                   </p>
                 ) : null}
               </details>
+
+              <ReportWrongButton questionId={view.question.id} attemptId={attempt.id} />
             </section>
           );
         })}

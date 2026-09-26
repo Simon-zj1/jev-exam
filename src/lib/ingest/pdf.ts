@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { INGEST_MAX_PAGES, MAX_MATERIAL_CHARS } from "@/lib/config";
 import { titleFromFileName } from "@/lib/ingest/file-kind";
-import type { IngestPage, IngestResult } from "@/lib/ingest/types";
+import type { IngestPage, RawIngestResult } from "@/lib/ingest/types";
 import { normalizeCjkCompatibility } from "@/lib/text";
 
 /** pdfjs 的文本项：只需要位置与文本，其余字段忽略。 */
@@ -97,7 +97,10 @@ function needsSpace(previous: string, next: string): boolean {
   return /[A-Za-z0-9]/.test(last) && /[A-Za-z0-9]/.test(first);
 }
 
-export async function extractPdfText(buffer: Uint8Array, fileName: string): Promise<IngestResult> {
+export async function extractPdfText(
+  buffer: Uint8Array,
+  fileName: string,
+): Promise<RawIngestResult> {
   const pdfjs = await loadPdfjs();
   const loadingTask = pdfjs.getDocument({
     // 用副本：pdfjs 会接管并释放传入的 buffer

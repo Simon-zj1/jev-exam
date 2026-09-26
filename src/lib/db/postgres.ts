@@ -9,13 +9,17 @@ import type {
   AttemptRecord,
   BlueprintRecord,
   ExamRecord,
+  FeedbackRecord,
   InviteCodeRecord,
   JudgmentRecord,
+  LlmUsageDelta,
+  LlmUsageRecord,
   MasteryRecord,
   MaterialRecord,
   MistakeRecord,
   NewBlueprint,
   NewExam,
+  NewFeedback,
   NewJudgment,
   NewMaterial,
   NewMistake,
@@ -48,6 +52,8 @@ export class PostgresStore implements Store {
   }
 
   async reset(): Promise<void> {
+    await this.db.delete(schema.feedbackReports);
+    await this.db.delete(schema.llmUsage);
     await this.db.delete(schema.reviewLogs);
     await this.db.delete(schema.reviewItems);
     await this.db.delete(schema.usageCounters);
@@ -587,6 +593,121 @@ export class PostgresStore implements Store {
       }
     }
     return snapshot;
+  }
+
+  async incrementLlmUsage(
+    userId: string,
+    day: string,
+    model: string,
+    delta: LlmUsageDelta,
+  ): Promise<LlmUsageRecord> {
+    const rows = await this.db
+      .insert(schema.llmUsage)
+      .values({
+        userId,
+        day,
+        model,
+        calls: delta.calls ?? 0,
+        inputTokens: delta.inputTokens ?? 0,
+        outputTokens: delta.outputTokens ?? 0,
+        costMicroUsd: delta.costMicroUsd ?? 0,
+      })
+      // 用 SQL 表达式自增，避免「先读后写」在并发下丢计数
+      .onConflictDoUpdate({
+        target: [schema.llmUsage.userId, schema.llmUsage.day, schema.llmUsage.model],
+        set: {
+          calls: sql`${schema.llmUsage.calls} + ${delta.calls ?? 0}`,
+          inputTokens: sql`${schema.llmUsage.inputTokens} + ${delta.inputTokens ?? 0}`,
+          outputTokens: sql`${schema.llmUsage.outputTokens} + ${delta.outputTokens ?? 0}`,
+          costMicroUsd: sql`${schema.llmUsage.costMicroUsd} + ${delta.costMicroUsd ?? 0}`,
+        },
+      })
+      .returning();
+    return rows[0] as LlmUsageRecord;
+  }
+
+  async listLlmUsage(userId: string, day: string): Promise<LlmUsageRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(schema.llmUsage)
+      .where(and(eq(schema.llmUsage.userId, userId), eq(schema.llmUsage.day, day)))
+      .orderBy(desc(schema.llmUsage.costMicroUsd));
+    return rows as LlmUsageRecord[];
+  }
+
+  async createFeedback(input: NewFeedback): Promise<FeedbackRecord> {
+    const rows = await this.db
+      .insert(schema.feedbackReports)
+      .values({
+        id: createId("fb"),
+        userId: input.userId,
+        questionId: input.questionId,
+        attemptId: input.attemptId,
+        kind: input.kind,
+        note: input.note,
+        snapshot: input.snapshot,
+        status: input.status ?? "open",
+      })
+      .returning();
+    return rows[0] as FeedbackRecord;
+  }
+
+  async listFeedback(userId: string | null): Promise<FeedbackRecord[]> {
+    const rows = userId
+      ? await this.db
+          .select()
+          .from(schema.feedbackReports)
+          .where(eq(schema.feedbackReports.userId, userId))
+          .orderBy(desc(schema.feedbackReports.createdAt))
+      : await this.db.select().from(schema.feedbackReports).orderBy(desc(schema.feedbackReports.createdAt));
+    return rows as FeedbackRecord[];
+  }
+
+  async deleteUserData(userId: string): Promise<void> {
+    await this.db.delete(schema.feedbackReports).where(eq(schema.feedbackReports.userId, userId));
+    await this.db.delete(schema.llmUsage).where(eq(schema.llmUsage.userId, userId));
+    await this.db.delete(schema.reviewLogs).where(eq(schema.reviewLogs.userId, userId));
+    await this.db.delete(schema.reviewItems).where(eq(schema.reviewItems.userId, userId));
+    await this.db.delete(schema.usageCounters).where(eq(schema.usageCounters.userId, userId));
+    await this.db.delete(schema.mistakeItems).where(eq(schema.mistakeItems.userId, userId));
+    await this.db.delete(schema.mastery).where(eq(schema.mastery.userId, userId));
+
+    // 作答与判定挂在 attempt 上，按该用户的 attempt 清理
+    const attempts = await this.db
+      .select({ id: schema.attempts.id })
+      .from(schema.attempts)
+      .where(eq(schema.attempts.userId, userId));
+    const attemptIds = attempts.map((row) => row.id);
+    if (attemptIds.length > 0) {
+      await this.db.delete(schema.judgments).where(inArray(schema.judgments.attemptId, attemptIds));
+      await this.db.delete(schema.answers).where(inArray(schema.answers.attemptId, attemptIds));
+      await this.db.delete(schema.attempts).where(inArray(schema.attempts.id, attemptIds));
+    }
+
+    const exams = await this.db
+      .select({ id: schema.exams.id })
+      .from(schema.exams)
+      .where(eq(schema.exams.userId, userId));
+    const examIds = exams.map((row) => row.id);
+    if (examIds.length > 0) {
+      await this.db.delete(schema.examQuestions).where(inArray(schema.examQuestions.examId, examIds));
+      await this.db.delete(schema.exams).where(inArray(schema.exams.id, examIds));
+    }
+
+    const materials = await this.db
+      .select({ id: schema.materials.id })
+      .from(schema.materials)
+      .where(eq(schema.materials.userId, userId));
+    const materialIds = materials.map((row) => row.id);
+    if (materialIds.length > 0) {
+      await this.db.delete(schema.questions).where(inArray(schema.questions.materialId, materialIds));
+      await this.db
+        .delete(schema.examBlueprints)
+        .where(inArray(schema.examBlueprints.materialId, materialIds));
+      await this.db.delete(schema.materials).where(inArray(schema.materials.id, materialIds));
+    }
+
+    await this.db.delete(schema.users).where(eq(schema.users.id, userId));
   }
 
   async upsertReviewItem(input: NewReviewItem): Promise<ReviewItemRecord> {

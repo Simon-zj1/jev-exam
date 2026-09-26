@@ -4,11 +4,13 @@ import { resolveDecisionEngine } from "@/lib/engine";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { gradeQuestion, type AnswerPayload } from "@/lib/grading";
 import { topicKeyOf } from "@/lib/ids";
+import { usageCollector } from "@/lib/llm/usage";
 import { assertQuota, recordUsage } from "@/lib/quota";
 import { readByok } from "@/lib/services/byok";
 import { getExamForUser } from "@/lib/services/generation";
 import { toGeneratedQuestion } from "@/lib/services/questions";
 import { syncReviewsFromAttempt } from "@/lib/services/reviews";
+import { recordChatUsage } from "@/lib/services/usage";
 import type { AnswerKey, Judgment } from "@/lib/types";
 
 const MISTAKE_THRESHOLD_PERCENT = 60;
@@ -73,7 +75,8 @@ export async function judgeOneAnswerForUser(
   const attempt = (await store.getOpenAttempt(exam.id, user.id)) ?? (await store.createAttempt(exam.id, user.id));
 
   const byok = readByok(user);
-  const selection = resolveDecisionEngine({ byok });
+  const usage = usageCollector();
+  const selection = resolveDecisionEngine({ byok, onChatUsage: usage.onChatUsage });
   const engine = selection.engine;
 
   const needsEngine = question.type === "short_answer" || question.type === "cloze";
@@ -86,10 +89,16 @@ export async function judgeOneAnswerForUser(
   }
 
   const answer = await store.saveAnswer(attempt.id, question.id, payload);
-  const judgment = await gradeQuestion(toGeneratedQuestion(question), payload, {
-    engine,
-    materialExcerpt: topicSpans.get(question.topicId) ?? "",
-  });
+  let judgment;
+  try {
+    judgment = await gradeQuestion(toGeneratedQuestion(question), payload, {
+      engine,
+      materialExcerpt: topicSpans.get(question.topicId) ?? "",
+    });
+  } finally {
+    // 判定已经调用过模型就产生了成本，即便随后写库失败也要记账
+    await recordChatUsage(user.id, usage.pending);
+  }
 
   await store.saveJudgment({
     answerId: answer.id,

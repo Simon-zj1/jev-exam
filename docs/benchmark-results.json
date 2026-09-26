@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-09-26T05:18:01.142Z",
+  "engine": {
+    "id": "lexical-demo",
+    "model": "lexical-demo-v1",
+    "requested": "offline"
+  },
+  "goldenSet": {
+    "file": "eval/golden/subjective.jsonl",
+    "itemCount": 12,
+    "pointCount": 42
+  },
+  "metrics": {
+    "perPointAccuracy": 0.7142857142857143,
+    "brierScore": 0.21582474857142858,
+    "flaggedItems": 9,
+    "calibrationMonotonic": true,
+    "buckets": [
+      {
+        "range": "0.0–0.2",
+        "count": 0,
+        "meanConfidence": 0,
+        "actualAccuracy": 0
+      },
+      {
+        "range": "0.2–0.4",
+        "count": 0,
+        "meanConfidence": 0,
+        "actualAccuracy": 0
+      },
+      {
+        "range": "0.4–0.6",
+        "count": 7,
+        "meanConfidence": 0.5682285714285714,
+        "actualAccuracy": 0.5714285714285714
+      },
+      {
+        "range": "0.6–0.8",
+        "count": 10,
+        "meanConfidence": 0.65774,
+        "actualAccuracy": 0.6
+      },
+      {
+        "range": "0.8–1.0",
+        "count": 25,
+        "meanConfidence": 0.9675439999999997,
+        "actualAccuracy": 0.8
+      }
+    ]
+  },
+  "thresholds": {
+    "accuracy": 0.9,
+    "calibration": true
+  },
+  "passed": false
+}

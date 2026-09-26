@@ -1,3 +1,5 @@
+import type { IngestHealth } from "@/lib/ingest/health";
+
 /**
  * 文档解析的结果契约。
  *
@@ -26,6 +28,8 @@ export type IngestResult = {
   pages: IngestPage[] | null;
   /** 面向用户的提示：哪一页没有文字、是否被截断、扫描件等 */
   warnings: string[];
+  /** 上传体检：能不能直接用这份材料出题 */
+  health: IngestHealth;
   stats: {
     charCount: number;
     /** 完全没有提取到文字的页数（PDF 常见于扫描件） */
@@ -33,12 +37,17 @@ export type IngestResult = {
   };
 };
 
+/** 各解析器能产出的部分；体检结论由 extractMaterialFromFile 统一补上。 */
+export type RawIngestResult = Omit<IngestResult, "health">;
+
 export type SourceMap = {
   kind: IngestKind;
   fileName: string;
   pageCount: number | null;
   pages: IngestPage[] | null;
   warnings: string[];
+  /** 上传体检结论。旧数据可能没有这个字段，读的时候要能容忍缺失 */
+  health?: IngestHealth;
 };
 
 /** 把字符偏移映射回页码；没有页面信息时返回 null。 */

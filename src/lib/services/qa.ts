@@ -16,6 +16,7 @@ import { retrieveEvidence, type RetrievalResult } from "@/lib/retrieval";
 import { scanMaterial } from "@/lib/security/untrusted";
 import { readByok } from "@/lib/services/byok";
 import { getMaterialForUser } from "@/lib/services/materials";
+import { recordChatUsage } from "@/lib/services/usage";
 
 /**
  * 材料问答：先检索证据，再让模型带着编号回答，最后逐条校验引注。
@@ -98,6 +99,14 @@ export async function askMaterialQuestion(
   });
 
   if (selection.countsAgainstQuota) await recordUsage(user.id, { ask: 1 });
+
+  await recordChatUsage(user.id, [
+    {
+      model: response.model,
+      inputTokens: response.usage?.inputTokens,
+      outputTokens: response.usage?.outputTokens,
+    },
+  ]);
 
   const check = verifyCitations(response.text.trim(), retrieval.evidence, {
     pageOf: (charOffset) => pageAt(material.sourceMap, charOffset),

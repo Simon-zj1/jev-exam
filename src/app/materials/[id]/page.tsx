@@ -87,6 +87,41 @@ export default async function MaterialDetailPage({
           </p>
         </section>
 
+        {material.sourceMap?.health ? (
+          <section className="card">
+            <div className="row row--between">
+              <h2 style={{ margin: 0 }}>上传体检</h2>
+              <span
+                className={`pill${
+                  material.sourceMap.health.level === "good"
+                    ? " pill--ok"
+                    : material.sourceMap.health.level === "fair"
+                      ? " pill--warn"
+                      : " pill--err"
+                }`}
+              >
+                {material.sourceMap.health.level === "good"
+                  ? "可用"
+                  : material.sourceMap.health.level === "fair"
+                    ? "基本可用"
+                    : "质量不佳"}
+              </span>
+            </div>
+            <p className="small muted">{material.sourceMap.health.summary}</p>
+            <ul className="small" style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+              {material.sourceMap.health.checks.map((check) => (
+                <li key={check.id}>
+                  <strong>
+                    {check.status === "pass" ? "✓" : check.status === "warn" ? "!" : "✕"}{" "}
+                    {check.label}
+                  </strong>
+                  ：{check.detail}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <AskPanel materialId={material.id} />
 
         {!blueprint ? (

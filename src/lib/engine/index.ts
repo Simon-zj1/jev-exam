@@ -3,6 +3,7 @@ import { LexicalJudgeEngine } from "@/lib/engine/lexical";
 import { LLMJudgeEngine } from "@/lib/engine/llm-judge";
 import { TypeSafeEngine } from "@/lib/engine/typesafe";
 import { resolveChatProvider, resolvePlatformChatProvider } from "@/lib/llm/provider";
+import { RecordingChatProvider, type ChatUsageEvent } from "@/lib/llm/usage";
 import type { DecisionEngine } from "@/lib/types";
 
 export type EngineMode = "byok" | "platform" | "offline";
@@ -18,6 +19,8 @@ export type EngineContext = {
   byok?: ByokConfig | null;
   /** 测试注入 */
   override?: DecisionEngine | null;
+  /** 计量回调：LLM 判定基线也会产生 token 成本，必须一并记录 */
+  onChatUsage?: (event: ChatUsageEvent) => void;
 };
 
 let globalOverride: DecisionEngine | null = null;
@@ -62,8 +65,11 @@ export function resolveDecisionEngine(context: EngineContext = {}): EngineSelect
 
   const chatProvider = resolvePlatformChatProvider();
   if (chatProvider) {
+    const provider = context.onChatUsage
+      ? new RecordingChatProvider(chatProvider, context.onChatUsage)
+      : chatProvider;
     return {
-      engine: new LLMJudgeEngine(chatProvider),
+      engine: new LLMJudgeEngine(provider),
       mode: "platform",
       countsAgainstQuota: true,
     };

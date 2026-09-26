@@ -84,6 +84,42 @@ describe("Word 解析", () => {
 });
 
 describe("上传边界", () => {
+  it("给出可读的上传体检结论，而不是静默通过", async () => {
+    const good = await extractMaterialFromFile({
+      buffer: fixture("sample.pdf"),
+      fileName: "note.pdf",
+    });
+    expect(good.result.health.level).toBe("good");
+    expect(good.result.health.checks.map((check) => check.id)).toEqual([
+      "page_coverage",
+      "volume",
+      "layout",
+      "mojibake",
+      "page_mapping",
+    ]);
+    expect(good.sourceMap.health?.level).toBe("good");
+
+    // 内容很短：体检必须说出来，而不是让用户以为一切正常
+    const thin = await extractMaterialFromFile({
+      buffer: new TextEncoder().encode("这是一段很短的材料，只有一句话。".repeat(6)),
+      fileName: "thin.txt",
+    });
+    expect(thin.result.health.level).not.toBe("good");
+    expect(
+      thin.result.health.checks.some((check) => check.status === "warn"),
+    ).toBe(true);
+  });
+
+  it("乱码字符会被体检标出来", async () => {
+    const text = `${"正常内容".repeat(60)}${"\uFFFD".repeat(30)}`;
+    const { result } = await extractMaterialFromFile({
+      buffer: new TextEncoder().encode(text),
+      fileName: "broken.txt",
+    });
+    const mojibake = result.health.checks.find((check) => check.id === "mojibake");
+    expect(mojibake?.status).not.toBe("pass");
+  });
+
   it("康熙部首/兼容字形会被还原成正常汉字，且不动全角标点", async () => {
     // 这些字形是真实 PDF 里出现过的：⼀（U+2F00）⽂（U+2F8A）⽤（U+2F63）
     const broken = "⼀⽂⽤，⼀个字。";

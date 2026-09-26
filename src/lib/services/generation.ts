@@ -10,8 +10,10 @@ import type { BlueprintRecord, ExamRecord, MaterialRecord, UserRecord } from "@/
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { resolveGenerationProvider } from "@/lib/generator";
 import { assertQuota, recordUsage } from "@/lib/quota";
+import { usageCollector } from "@/lib/llm/usage";
 import { readByok } from "@/lib/services/byok";
 import { getMaterialForUser } from "@/lib/services/materials";
+import { recordChatUsage } from "@/lib/services/usage";
 import { createId } from "@/lib/ids";
 import type { AnswerKey, GeneratedQuestion, Outline, Topic } from "@/lib/types";
 
@@ -28,13 +30,23 @@ export async function generateOutlineForMaterial(
   options: { topicCount?: number } = {},
 ): Promise<OutlineResult> {
   const material = await getMaterialForUser(user, materialId);
-  const { provider } = resolveGenerationProvider({ byok: readByok(user) });
+  const usage = usageCollector();
+  const { provider } = resolveGenerationProvider({
+    byok: readByok(user),
+    onChatUsage: usage.onChatUsage,
+  });
 
   const topicCount = clamp(options.topicCount ?? 6, 2, 12);
-  const outline: Outline = await provider.generateOutline({
-    materialText: material.rawText,
-    topicCount,
-  });
+  let outline: Outline;
+  try {
+    outline = await provider.generateOutline({
+      materialText: material.rawText,
+      topicCount,
+    });
+  } finally {
+    // 调用已经发生、成本已经产生，失败也要记账
+    await recordChatUsage(user.id, usage.pending);
+  }
 
   const blueprint = await getStore().saveBlueprint({
     materialId: material.id,
@@ -79,15 +91,24 @@ export async function createExamForMaterial(
   const count = clamp(input.count ?? DEFAULT_QUESTION_COUNT, MIN_QUESTION_COUNT, MAX_QUESTION_COUNT);
   const mix = normalizeMix(input.mix);
 
-  const { provider, countsAgainstQuota } = resolveGenerationProvider({ byok: readByok(user) });
+  const usage = usageCollector();
+  const { provider, countsAgainstQuota } = resolveGenerationProvider({
+    byok: readByok(user),
+    onChatUsage: usage.onChatUsage,
+  });
   if (countsAgainstQuota) await assertQuota(user.id, { question: count });
 
-  const generated = await provider.generateQuestions({
-    materialText: material.rawText,
-    topics,
-    mix,
-    count,
-  });
+  let generated;
+  try {
+    generated = await provider.generateQuestions({
+      materialText: material.rawText,
+      topics,
+      mix,
+      count,
+    });
+  } finally {
+    await recordChatUsage(user.id, usage.pending);
+  }
 
   const store = getStore();
   const blueprintId = blueprint.id;

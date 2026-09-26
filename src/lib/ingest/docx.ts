@@ -1,6 +1,6 @@
 import { MAX_MATERIAL_CHARS } from "@/lib/config";
 import { titleFromFileName } from "@/lib/ingest/file-kind";
-import type { IngestResult } from "@/lib/ingest/types";
+import type { RawIngestResult } from "@/lib/ingest/types";
 import { normalizeCjkCompatibility } from "@/lib/text";
 
 type MammothModule = {
@@ -22,7 +22,10 @@ async function loadMammoth(): Promise<MammothModule> {
 }
 
 /** 解析 .docx：只取纯文本，不保留样式（本项目的材料一律是纯文本）。 */
-export async function extractDocxText(buffer: Uint8Array, fileName: string): Promise<IngestResult> {
+export async function extractDocxText(
+  buffer: Uint8Array,
+  fileName: string,
+): Promise<RawIngestResult> {
   const mammoth = await loadMammoth();
   const { value } = await mammoth.extractRawText({ buffer: Buffer.from(buffer) });
 

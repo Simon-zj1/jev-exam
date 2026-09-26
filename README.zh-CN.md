@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.6.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.7.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -71,6 +71,11 @@
 编号越界会被代码删掉并记为问题，没有出处的实质性句子会被单独列出来，材料之外的内容必须自带
 「模型补充」标签。检索不到相关句子时直接回答「材料里没有」，不调用模型也不消耗额度。
 
+第四条是**数据可迁移**：材料、错题与掌握度能导出成 Markdown / Anki CSV / 完整 JSON，
+账号可一键删除。判错一次就失信，所以结果页每题都有「这题判错了？」入口——
+上报会连同当时的题目、作答与逐点概率一起冻结，人工确认后并入评测集
+（`npm run feedback:golden` 导出候选，见 [docs/benchmark.md](docs/benchmark.md)）。
+
 ## 这个项目在做什么
 
 三个环节分工是固定的，不能混：
@@ -112,6 +117,9 @@ echo 'INITIAL_INVITE_CODES=DEV-INVITE' >> .env
 
 Web 版包含：邀请制登录、材料库、**上传 PDF/Word 自动解析**、知识点确认、作答、逐点判定报告、
 **就材料提问（答案带出处）**、错题本与掌握度、**间隔重复复习（FSRS-5）**、每日额度、BYOK。
+
+用户的数据属于用户自己：设置页可以导出 **Markdown / Anki CSV / 完整备份 JSON**，
+账号可以一键删除；判错了有「这题判错了？」入口，上报会冻结当时的判定现场并进入人工复核队列。
 
 材料可以直接上传文件：PDF 逐页解析并记录页码，所以答案出处能定位到「第几页」；
 Word 取 `.docx` 正文。解析结果先回填表单让你确认，再保存——不会把解析错的段落直接存进材料。
@@ -319,6 +327,9 @@ BASE_URL=http://localhost:3111 INVITE_CODE=DEV-INVITE npm run smoke
 金标准集在 [eval/golden/subjective.jsonl](eval/golden/subjective.jsonl)（当前 12 道，方案目标是 60–100 道），
 每行是「材料片段 + 题目 + 学生作答 + 逐得分点人工标注」。
 
+基准的数据格式、复现命令与指标门槛整理在 [docs/benchmark.md](docs/benchmark.md)；
+`npm run benchmark` 会写出机器可读的 `docs/benchmark-results.json`，方便贴榜单或做回归对比。
+
 验收门槛（`--enforce` 时生效）：逐点准确率 ≥ 90% 且校准单调。
 离线演示引擎达不到这个门槛是预期行为——它在金标准集上的实测是**逐点准确率 71.4%、Brier 0.216**，
 校准分桶单调（0.6–0.8 档 60%、0.8–1.0 档 80%），但 12 道题里有 9 道因判定强度不足被标为待复核。
@@ -374,11 +385,18 @@ examples/              示例材料
    （哪些点命中、哪些没命中、扣分项概率多少），不展示模型解释。
 6. **待复核不自动复审**：低置信度题目只标记、不计入掌握度，不自动调用更强的模型改判。
 7. **覆盖率不等于正确性**：覆盖率只说明「要点有没有被出题」，不说明题目本身出得好不好。
+8. **成本是估算值**：模型价格随时会变，设置页的今日成本按公开价折算，用于看趋势与设上限，
+   不等于服务商的真实账单。
+9. **还没有原生端与离线 Web**：当前交付形态是 Web + CLI + Agent Skill + MCP。
+   Web 端需要联网（没有 PWA / Service Worker）；CLI 与 Agent Skill 可以完全离线运行。
+   iPad 手写作答（PencilKit → 识别 → 同一套判定链路）尚未实现。
 
 ## 后续路线
 
 - 把金标准集扩到 60–100 题并按知识点分层，接 CI 做回归；
-- 接入 PDF/DOCX 解析与图片 OCR（引入视觉模型），并沿用「未核验区间」标记；
+- 图片型 PDF 与手写笔记的 OCR（引入视觉模型），沿用上传体检里的「不可用」标记；
+- iPad 手写作答：PencilKit 采集 → 数学/文字识别 → 现有判定链路；
+- Web 端离线能力（PWA + 离线队列）与多端同步；
 - Supabase Auth + RLS 的真实部署；
 - 错题驱动的补题：覆盖率低的材料自动补出题目；
 - 自托管决策模型（Kev 等开源复刻）作为 `DecisionEngine` 的第三种实现，摆脱对 TypeSafe 的依赖。

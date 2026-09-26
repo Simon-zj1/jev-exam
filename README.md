@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.6.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.7.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -91,6 +91,10 @@ daily quotas and BYOK keys are all included.
 Upload a file instead of pasting: PDFs are parsed page by page and the page boundaries are stored, so a
 citation can point at "page 3"; Word documents give up their `.docx` text. Extraction only fills the form —
 nothing is saved until you review the text, so a bad extraction never lands in your material silently.
+
+Your data stays yours: settings export **Markdown / Anki CSV / a full JSON backup**, and the account can be
+deleted in one place. When a judgment is wrong there is a "graded this wrong?" button on every question; the
+report freezes the question, your answer and the per-point probabilities at that moment for human review.
 
 Mistakes are not just collected: after you submit, every question you lost points on enters the review
 queue (due the same day), and each review maps the judged score onto an FSRS rating that pushes the next
@@ -173,6 +177,10 @@ self-consistency, gated at ≥ 90% accuracy with monotonic calibration. The offl
 questions as needing review because its judgment strength is too low — that is the argument for using a
 calibrated decision model instead of word overlap.
 
+The benchmark's data format, reproduction commands and metric gates live in
+[docs/benchmark.md](docs/benchmark.md); `npm run benchmark` writes a machine-readable
+`docs/benchmark-results.json` for leaderboards or regression diffs.
+
 ## Security
 
 Uploaded material is treated as untrusted data: instructions found inside it are never executed, and a
@@ -183,6 +191,11 @@ Known limits: scanned or image-only PDFs are not OCR'd (the app says which pages
 files must be re-saved as `.docx`, uploads are capped at 4 MB because of the serverless request-body limit,
 and retrieval inside a material is lexical (TF × IDF: words for Latin, bigrams for Chinese) — a paraphrase
 may not be found, and the app then says so instead of guessing.
+
+Costs shown in settings are estimates derived from public price lists, useful for spotting trends and
+setting caps, not a provider invoice. There is no native app or offline web client yet: the delivery
+surfaces are web, CLI, Agent Skill and MCP. The CLI and skill run fully offline; the web app needs a
+network. iPad handwriting (PencilKit → recognition → the same grading pipeline) is not implemented.
 
 ## License
 

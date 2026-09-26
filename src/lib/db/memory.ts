@@ -5,13 +5,17 @@ import type {
   AttemptRecord,
   BlueprintRecord,
   ExamRecord,
+  FeedbackRecord,
   InviteCodeRecord,
   JudgmentRecord,
+  LlmUsageDelta,
+  LlmUsageRecord,
   MasteryRecord,
   MaterialRecord,
   MistakeRecord,
   NewBlueprint,
   NewExam,
+  NewFeedback,
   NewJudgment,
   NewMaterial,
   NewMistake,
@@ -46,6 +50,8 @@ type MemoryState = {
   usage: Map<string, number>;
   reviewItems: Map<string, ReviewItemRecord>;
   reviewLogs: ReviewLogRecord[];
+  llmUsage: Map<string, LlmUsageRecord>;
+  feedback: Map<string, FeedbackRecord>;
 };
 
 function emptyState(): MemoryState {
@@ -65,6 +71,8 @@ function emptyState(): MemoryState {
     usage: new Map(),
     reviewItems: new Map(),
     reviewLogs: [],
+    llmUsage: new Map(),
+    feedback: new Map(),
   };
 }
 
@@ -465,6 +473,114 @@ export class MemoryStore implements Store {
       snapshot[kind] = this.state.usage.get(`${userId}::${day}::${kind}`) ?? 0;
     }
     return snapshot;
+  }
+
+  async incrementLlmUsage(
+    userId: string,
+    day: string,
+    model: string,
+    delta: LlmUsageDelta,
+  ): Promise<LlmUsageRecord> {
+    const key = `${userId}::${day}::${model}`;
+    const current: LlmUsageRecord = this.state.llmUsage.get(key) ?? {
+      model,
+      calls: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      costMicroUsd: 0,
+    };
+    const next: LlmUsageRecord = {
+      model,
+      calls: current.calls + (delta.calls ?? 0),
+      inputTokens: current.inputTokens + (delta.inputTokens ?? 0),
+      outputTokens: current.outputTokens + (delta.outputTokens ?? 0),
+      costMicroUsd: current.costMicroUsd + (delta.costMicroUsd ?? 0),
+    };
+    this.state.llmUsage.set(key, next);
+    return next;
+  }
+
+  async listLlmUsage(userId: string, day: string): Promise<LlmUsageRecord[]> {
+    return [...this.state.llmUsage.entries()]
+      .filter(([key]) => key.startsWith(`${userId}::${day}::`))
+      .map(([, record]) => record)
+      .sort((a, b) => b.costMicroUsd - a.costMicroUsd);
+  }
+
+  async createFeedback(input: NewFeedback): Promise<FeedbackRecord> {
+    const record: FeedbackRecord = {
+      ...input,
+      status: input.status ?? "open",
+      id: createId("fb"),
+      createdAt: new Date(),
+    };
+    this.state.feedback.set(record.id, record);
+    return record;
+  }
+
+  async listFeedback(userId: string | null): Promise<FeedbackRecord[]> {
+    return [...this.state.feedback.values()]
+      .filter((record) => userId === null || record.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async deleteUserData(userId: string): Promise<void> {
+    const materialIds = new Set(
+      [...this.state.materials.values()]
+        .filter((material) => material.userId === userId)
+        .map((material) => material.id),
+    );
+    const questionIds = new Set(
+      [...this.state.questions.values()]
+        .filter((question) => materialIds.has(question.materialId))
+        .map((question) => question.id),
+    );
+    const examIds = new Set(
+      [...this.state.exams.values()]
+        .filter((exam) => exam.userId === userId)
+        .map((exam) => exam.id),
+    );
+    const attemptIds = new Set(
+      [...this.state.attempts.values()]
+        .filter((attempt) => attempt.userId === userId)
+        .map((attempt) => attempt.id),
+    );
+
+    for (const [id, answer] of this.state.answers) {
+      if (attemptIds.has(answer.attemptId)) this.state.answers.delete(id);
+    }
+    for (const [id, judgment] of this.state.judgments) {
+      if (attemptIds.has(judgment.attemptId)) this.state.judgments.delete(id);
+    }
+    for (const id of attemptIds) this.state.attempts.delete(id);
+    for (const id of examIds) this.state.exams.delete(id);
+    for (const [id, question] of this.state.questions) {
+      if (questionIds.has(id)) this.state.questions.delete(id);
+    }
+    for (const [id, blueprint] of this.state.blueprints) {
+      if (materialIds.has(blueprint.materialId)) this.state.blueprints.delete(id);
+    }
+    for (const id of materialIds) this.state.materials.delete(id);
+    for (const [key, record] of this.state.mastery) {
+      if (key.startsWith(`${userId}::`)) this.state.mastery.delete(key);
+    }
+    for (const [key, mistake] of this.state.mistakes) {
+      if (mistake.userId === userId) this.state.mistakes.delete(key);
+    }
+    for (const [key, item] of this.state.reviewItems) {
+      if (item.userId === userId) this.state.reviewItems.delete(key);
+    }
+    for (const [key] of this.state.usage) {
+      if (key.startsWith(`${userId}::`)) this.state.usage.delete(key);
+    }
+    for (const [key] of this.state.llmUsage) {
+      if (key.startsWith(`${userId}::`)) this.state.llmUsage.delete(key);
+    }
+    for (const [id, report] of this.state.feedback) {
+      if (report.userId === userId) this.state.feedback.delete(id);
+    }
+    this.state.reviewLogs = this.state.reviewLogs.filter((log) => log.userId !== userId);
+    this.state.users.delete(userId);
   }
 
   async upsertReviewItem(input: NewReviewItem): Promise<ReviewItemRecord> {

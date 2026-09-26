@@ -6,11 +6,12 @@
  *   npm run eval:judge -- --engine offline  # 强制离线词面引擎（演示）
  *   npm run eval:judge -- --enforce         # 不达门槛时以退出码 1 失败
  *   npm run eval:judge -- --consistency 5   # 额外做自一致性检查
+ *   npm run eval:judge -- --json out.json   # 输出机器可读结果（用于公开榜单/回归对比）
  *
  * 金标准集在 eval/golden/subjective.jsonl：每行一道主观题 + 学生作答 + 逐得分点人工标注。
  * 扩大标注集是提升判定可信度最有效的一步。
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { resolveDecisionEngine } from "../src/lib/engine/index";
@@ -45,12 +46,18 @@ type PointRecord = {
 };
 
 function parseArgs(argv: string[]) {
-  const args = { engine: undefined as string | undefined, enforce: false, consistency: 0 };
+  const args = {
+    engine: undefined as string | undefined,
+    enforce: false,
+    consistency: 0,
+    json: undefined as string | undefined,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
     if (value === "--enforce") args.enforce = true;
     if (value === "--engine") args.engine = argv[++index];
     if (value === "--consistency") args.consistency = Number(argv[++index] ?? 0);
+    if (value === "--json") args.json = argv[++index];
   }
   return args;
 }
@@ -234,6 +241,39 @@ async function main() {
   if (args.enforce && !passed) {
     console.error("\n未达门槛，退出码 1。");
     process.exit(1);
+  }
+
+  // 机器可读结果：公开榜单与回归对比都读这个文件，避免靠人眼抄数字
+  if (args.json) {
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      engine: { id: engine.id, model: engine.model, requested: args.engine ?? "auto" },
+      goldenSet: {
+        file: "eval/golden/subjective.jsonl",
+        itemCount: items.length,
+        pointCount: records.length,
+      },
+      metrics: {
+        perPointAccuracy,
+        brierScore,
+        flaggedItems: flaggedItems.length,
+        calibrationMonotonic: monotonic,
+        buckets: buckets.map((bucket) => ({
+          range: bucket.range,
+          count: bucket.count,
+          meanConfidence: bucket.meanConfidence,
+          actualAccuracy: bucket.actualAccuracy,
+        })),
+      },
+      thresholds,
+      passed,
+    };
+    writeFileSync(
+      resolve(process.cwd(), args.json),
+      `${JSON.stringify(payload, null, 2)}\n`,
+      "utf8",
+    );
+    console.log(`\n已写入机器可读结果：${args.json}`);
   }
 }
 

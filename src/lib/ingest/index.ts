@@ -2,11 +2,14 @@ import { MAX_MATERIAL_CHARS, MAX_UPLOAD_BYTES } from "@/lib/config";
 import { ValidationError } from "@/lib/errors";
 import { extractDocxText } from "@/lib/ingest/docx";
 import { detectFileKind, titleFromFileName } from "@/lib/ingest/file-kind";
+import { diagnoseIngest } from "@/lib/ingest/health";
 import { extractPdfText } from "@/lib/ingest/pdf";
-import type { IngestResult, SourceMap } from "@/lib/ingest/types";
+import type { IngestResult, RawIngestResult, SourceMap } from "@/lib/ingest/types";
 import { normalizeCjkCompatibility } from "@/lib/text";
 
 export type { IngestKind, IngestPage, IngestResult, SourceMap } from "@/lib/ingest/types";
+export type { HealthCheck, HealthStatus, IngestHealth } from "@/lib/ingest/health";
+export { diagnoseIngest } from "@/lib/ingest/health";
 export { pageAt } from "@/lib/ingest/types";
 export { detectFileKind, titleFromFileName } from "@/lib/ingest/file-kind";
 
@@ -39,17 +42,17 @@ export async function extractMaterialFromFile(input: {
     throw new ValidationError(UNSUPPORTED_HINT[detected.kind] ?? UNSUPPORTED_HINT.unknown);
   }
 
-  let result: IngestResult;
+  let extraction: RawIngestResult;
   try {
     if (detected.kind === "pdf") {
-      result = await extractPdfText(buffer, fileName);
+      extraction = await extractPdfText(buffer, fileName);
     } else if (detected.kind === "docx") {
-      result = await extractDocxText(buffer, fileName);
+      extraction = await extractDocxText(buffer, fileName);
     } else {
       const text = normalizeCjkCompatibility(
         Buffer.from(buffer).toString("utf8").replace(/\r\n?/g, "\n"),
       ).trim();
-      result = {
+      extraction = {
         kind: "text",
         title: titleFromFileName(fileName),
         text: text.length > MAX_MATERIAL_CHARS ? text.slice(0, MAX_MATERIAL_CHARS) : text,
@@ -64,13 +67,23 @@ export async function extractMaterialFromFile(input: {
     throw new ValidationError(describeExtractionFailure(detected.kind, error));
   }
 
-  if (result.text.length < 80) {
+  if (extraction.text.length < 80) {
     throw new ValidationError(
       detected.kind === "pdf"
         ? "这份 PDF 没有提取到足够文字，多半是扫描件或纯图片。请先用 OCR 转成文字，或直接粘贴正文。"
         : "解析出来的文字太少，无法作为学习材料。",
     );
   }
+
+  // 体检结论在这里统一生成：解析器只管抽文字，判「能不能用」是同一套标准
+  const health = diagnoseIngest({
+    kind: extraction.kind,
+    text: extraction.text,
+    pageCount: extraction.pageCount,
+    pages: extraction.pages,
+    emptyPageCount: extraction.stats.emptyPageCount,
+  });
+  const result: IngestResult = { ...extraction, health };
 
   return {
     result,
@@ -80,6 +93,7 @@ export async function extractMaterialFromFile(input: {
       pageCount: result.pageCount,
       pages: result.pages,
       warnings: result.warnings,
+      health,
     },
   };
 }

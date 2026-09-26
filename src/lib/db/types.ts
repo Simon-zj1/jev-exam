@@ -206,6 +206,64 @@ export type ReviewLogRecord = {
 
 export type NewReviewLog = Omit<ReviewLogRecord, "id" | "reviewedAt"> & { reviewedAt?: Date };
 
+/** 纠错上报的类型：用户认为哪里错了 */
+export type FeedbackKind = "wrong_score" | "wrong_reference" | "bad_question" | "other";
+
+export const FEEDBACK_KIND_LABEL: Record<FeedbackKind, string> = {
+  wrong_score: "判定分数不对",
+  wrong_reference: "参考答案不对",
+  bad_question: "题目本身有问题",
+  other: "其它问题",
+};
+
+/**
+ * 上报时冻结的现场快照。
+ * 判定逻辑会迭代，只留 questionId 的话，之后回看已经无法复原当时判了什么。
+ */
+export type FeedbackSnapshot = {
+  materialTitle: string;
+  questionType: string;
+  stem: string;
+  payload: AnswerPayload | null;
+  scorePercent: number | null;
+  needsReview: boolean;
+  engineId: string | null;
+  engineModel: string | null;
+  referenceAnswer: string | null;
+  points: { point_id: string; statement: string; probability: number; awarded: boolean }[];
+};
+
+export type FeedbackRecord = {
+  id: string;
+  userId: string;
+  questionId: string;
+  attemptId: string | null;
+  kind: FeedbackKind;
+  note: string | null;
+  snapshot: FeedbackSnapshot;
+  status: string;
+  createdAt: Date;
+};
+
+export type NewFeedback = Omit<FeedbackRecord, "id" | "createdAt" | "status"> & {
+  status?: string;
+};
+
+export type LlmUsageDelta = {
+  calls?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  costMicroUsd?: number;
+};
+
+export type LlmUsageRecord = {
+  model: string;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  costMicroUsd: number;
+};
+
 export interface Store {
   createUser(email: string): Promise<UserRecord>;
   getUser(id: string): Promise<UserRecord | null>;
@@ -271,6 +329,21 @@ export interface Store {
 
   incrementUsage(userId: string, day: string, kind: QuotaKind, amount: number): Promise<number>;
   getUsage(userId: string, day: string): Promise<UsageSnapshot>;
+
+  incrementLlmUsage(
+    userId: string,
+    day: string,
+    model: string,
+    delta: LlmUsageDelta,
+  ): Promise<LlmUsageRecord>;
+  listLlmUsage(userId: string, day: string): Promise<LlmUsageRecord[]>;
+
+  createFeedback(input: NewFeedback): Promise<FeedbackRecord>;
+  /** userId 为 null 时返回全部用户的上报（供本地导出脚本用） */
+  listFeedback(userId: string | null): Promise<FeedbackRecord[]>;
+
+  /** 删除账号：连同该用户的全部派生数据一起删 */
+  deleteUserData(userId: string): Promise<void>;
 
   upsertReviewItem(input: NewReviewItem): Promise<ReviewItemRecord>;
   getReviewItem(userId: string, questionId: string): Promise<ReviewItemRecord | null>;

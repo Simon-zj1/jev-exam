@@ -24,7 +24,11 @@
 - `src/lib/generator/`：出题与落地校验（schema、锚点定位、去重、重试）。
 - `src/lib/grading/`：客观题确定性判分 + 主观题逐点判定与门控。
 - `src/lib/ingest/`：上传解析（PDF 逐页 + 页面边界、Word `.docx`、纯文本），解析结果先回填表单再保存。
+- `src/lib/ingest/health.ts`：上传体检（文字覆盖率/体量/段落/乱码/页码追溯），结论存进 `source_map.health`。
 - `src/lib/retrieval.ts` / `src/lib/qa/`：材料内证据检索与问答引注校验（越界编号删除、无出处句子列出、模型补充打标）。
+- `src/lib/services/export.ts`：数据导出（Markdown / Anki CSV / 完整备份 JSON），另有纠错候选导出。
+- `src/lib/llm/usage.ts`：模型调用计量（token + 估算费用，微美元整数），统一经 `RecordingChatProvider` 包裹。
+- `src/lib/interleave.ts`：复习队列的知识点打散（交错练习）。
 - `src/lib/coverage.ts`：覆盖率校验（哪些材料要点没被出题）。
 - `src/lib/provenance.ts`：溯源契约（材料原文 vs 模型补充）。
 - `src/lib/security/untrusted.ts`：不可信材料扫描、分隔符转义、HTML 转义。
@@ -41,6 +45,8 @@ npx jev-exam grade   --material m.md --exam exam.json --answers answers.json --o
 npx jev-exam render  --report work/report.json --out report.html
 npm test                         # 单元 + 集成 + HTTP 层
 npm run eval:judge -- --enforce  # 判定评测（逐点准确率 / Brier / 校准分桶）
+npm run benchmark                # 基准结果写出 docs/benchmark-results.json
+npm run feedback:golden          # 把用户纠错导出成金标准候选
 npm run demo:report              # 重新生成示例报告
 ```
 

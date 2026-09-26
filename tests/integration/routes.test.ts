@@ -17,6 +17,11 @@ import { POST as judgeRoute } from "@/app/api/exams/[id]/judge/route";
 import { POST as finalizeRoute } from "@/app/api/exams/[id]/finalize/route";
 import { GET as reviewsRoute } from "@/app/api/reviews/route";
 import { POST as reviewGradeRoute } from "@/app/api/reviews/grade/route";
+import { GET as exportBackupRoute } from "@/app/api/export/backup/route";
+import { GET as exportAnkiRoute } from "@/app/api/export/anki/route";
+import { GET as exportMarkdownRoute } from "@/app/api/export/markdown/route";
+import { GET as feedbackRoute, POST as feedbackPostRoute } from "@/app/api/feedback/route";
+import { DELETE as deleteAccountRoute } from "@/app/api/account/route";
 import { QUOTA_LIMITS } from "@/lib/config";
 import { getStore } from "@/lib/db";
 import { setDecisionEngineOverride } from "@/lib/engine";
@@ -120,6 +125,19 @@ describe("HTTP 层（路由处理器）", () => {
       await askRoute(
         jsonRequest("/api/materials/mat_x/ask", { method: "POST", body: { question: "这是什么？" } }),
         params("mat_x"),
+      ),
+      await exportBackupRoute(jsonRequest("/api/export/backup")),
+      await exportAnkiRoute(jsonRequest("/api/export/anki")),
+      await exportMarkdownRoute(jsonRequest("/api/export/markdown")),
+      await feedbackRoute(jsonRequest("/api/feedback")),
+      await feedbackPostRoute(
+        jsonRequest("/api/feedback", {
+          method: "POST",
+          body: { questionId: "q1", kind: "wrong_score" },
+        }),
+      ),
+      await deleteAccountRoute(
+        jsonRequest("/api/account", { method: "DELETE", body: { confirmEmail: "x@example.com" } }),
       ),
     ]) {
       expect(response.status).toBe(401);
@@ -585,5 +603,103 @@ describe("HTTP 层（路由处理器）", () => {
       params(materialId),
     );
     expect(denied.status).toBe(403);
+  });
+
+  it("导出三种格式 + 纠错上报 + 删除账号", async () => {
+    const { cookie } = await login("exporter-http@example.com", "HTTP-CODE");
+
+    const created = await createMaterialRoute(
+      jsonRequest("/api/materials", {
+        method: "POST",
+        cookie,
+        body: { title: "导出材料", rawText: SAMPLE_MATERIAL },
+      }),
+    );
+    const materialId = ((await created.json()) as { material: { id: string } }).material.id;
+    await outlineRoute(
+      jsonRequest(`/api/materials/${materialId}/outline`, { method: "POST", cookie, body: {} }),
+      params(materialId),
+    );
+    const examResponse = await createExamRoute(
+      jsonRequest("/api/exams", {
+        method: "POST",
+        cookie,
+        body: { materialId, topicIds: [], count: 4, mix: { mcq: 2, true_false: 1, cloze: 1 } },
+      }),
+    );
+    const examId = ((await examResponse.json()) as { examId: string }).examId;
+    const questionIds = await getStore().listExamQuestionIds(examId);
+    const questions = await getStore().getQuestions(questionIds);
+    const answers = questions.map((question) => ({
+      questionId: question.id,
+      payload:
+        question.type === "mcq"
+          ? { type: "mcq", index: 0 }
+          : question.type === "true_false"
+            ? { type: "true_false", value: true }
+            : { type: "cloze", text: "光反应" },
+    }));
+    const submitted = await submitRoute(
+      jsonRequest(`/api/exams/${examId}/submit`, { method: "POST", cookie, body: { answers } }),
+      params(examId),
+    );
+    const attemptId = ((await submitted.json()) as { attemptId: string }).attemptId;
+
+    // 导出：markdown / anki / backup 三种都必须能下载
+    const markdown = await exportMarkdownRoute(jsonRequest("/api/export/markdown", { cookie }));
+    expect(markdown.status).toBe(200);
+    expect(markdown.headers.get("content-disposition")).toContain("attachment");
+    expect(await markdown.text()).toContain("导出材料");
+
+    const anki = await exportAnkiRoute(jsonRequest("/api/export/anki", { cookie }));
+    expect(anki.status).toBe(200);
+    expect(await anki.text()).toContain("jev-exam");
+
+    const backup = await exportBackupRoute(jsonRequest("/api/export/backup", { cookie }));
+    expect(backup.status).toBe(200);
+    const bundle = JSON.parse(await backup.text()) as {
+      format: string;
+      materials: unknown[];
+      attempts: unknown[];
+    };
+    expect(bundle.format).toBe("jev-exam-backup");
+    expect(bundle.materials).toHaveLength(1);
+    expect(bundle.attempts).toHaveLength(1);
+
+    // 纠错上报
+    const reported = await feedbackPostRoute(
+      jsonRequest("/api/feedback", {
+        method: "POST",
+        cookie,
+        body: { questionId: questions[0].id, attemptId, kind: "wrong_score", note: "判错了" },
+      }),
+    );
+    expect(reported.status).toBe(201);
+    const list = await feedbackRoute(jsonRequest("/api/feedback", { cookie }));
+    expect(((await list.json()) as { reports: unknown[] }).reports).toHaveLength(1);
+
+    // 确认邮箱不匹配时不能删号
+    const wrongConfirm = await deleteAccountRoute(
+      jsonRequest("/api/account", {
+        method: "DELETE",
+        cookie,
+        body: { confirmEmail: "not-me@example.com" },
+      }),
+    );
+    expect(wrongConfirm.status).toBe(400);
+
+    // 删除账号：会话 Cookie 被清掉，数据也没了
+    const deleted = await deleteAccountRoute(
+      jsonRequest("/api/account", {
+        method: "DELETE",
+        cookie,
+        body: { confirmEmail: "exporter-http@example.com" },
+      }),
+    );
+    expect(deleted.status).toBe(200);
+    expect(deleted.headers.get("set-cookie")).toContain("jev_session=;");
+
+    const afterDelete = await materialsRoute(jsonRequest("/api/materials", { cookie }));
+    expect(afterDelete.status).toBe(401);
   });
 });

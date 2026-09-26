@@ -25,8 +25,10 @@ export default async function HomePage() {
             <span className="pill">上传资料就能考你</span>
             <h1>把资料变成考卷，做完告诉你哪里没学会</h1>
             <p>
-              上传你自己的教材、笔记或讲义，系统自动出题；你答完，它按得分点逐条批改，
-              明确指出你漏掉了哪一个要点。学习内容完全由你决定，资料只存在你自己的账号里。
+              上传你自己的教材、笔记或讲义（PDF / Word / 纯文本都行），系统自动出题；
+              你答完，它按得分点逐条批改，明确指出你漏掉了哪一个要点。看不懂的地方可以就材料追问，
+              回答逐句标注出处；错题会按间隔重复排期，告诉你什么时候该再看一遍。
+              学习内容完全由你决定，资料只存在你自己的账号里，随时可以导出。
             </p>
             <div className="row">
               <Link className="pill" href="/login">
@@ -60,6 +62,47 @@ export default async function HomePage() {
                 不会用假装确定的分数误导复习方向。
               </p>
             </div>
+          </section>
+
+          <section className="card">
+            <h2>为什么不用 ChatGPT 或 NotebookLM？</h2>
+            <p className="small muted">
+              它们很擅长「读」和「讲」，但你要的是「练」和「知道自己哪里不会」。四件具体的事：
+            </p>
+            <div className="grid grid--2">
+              <div>
+                <h3>判定可核对，不是给个分</h3>
+                <p className="small muted">
+                  ChatGPT 给你一个听起来合理的分数，你无法核对；这里把简答题拆成得分点逐条判定，
+                  每一条都能回到材料原文，判不准的题会标成「待复核」而不是硬给分。
+                </p>
+              </div>
+              <div>
+                <h3>有复习闭环，不只是当场问答</h3>
+                <p className="small muted">
+                  NotebookLM 帮你整理资料，但不会记得你上周错在哪。这里错题自动进入
+                  FSRS 复习排期，每天只让你看该看的那几张卡。
+                </p>
+              </div>
+              <div>
+                <h3>上传就能考，答案带出处</h3>
+                <p className="small muted">
+                  直接上传 PDF 或 Word，不用先转文本；追问时回答逐句带引注，
+                  PDF 还能点到「第几页」，材料里没有的会直接说没有。
+                </p>
+              </div>
+              <div>
+                <h3>数据在你自己手里</h3>
+                <p className="small muted">
+                  材料、错题、掌握度随时可导出成 Markdown、Anki CSV 或完整备份，
+                  账号也能一键删除。想走随时走，不用怕被锁住。
+                </p>
+              </div>
+            </div>
+            <p className="small muted">
+              反过来，如果你要的是写作、头脑风暴或者开放式讨论，通用助手更合适——
+              这里的强项只有一件：把你自己的材料变成一场可核对、会排期的考试。
+            </p>
           </section>
 
           <section className="card">
@@ -103,6 +146,11 @@ export default async function HomePage() {
               </table>
             </details>
           </section>
+
+          <p className="small muted">
+            使用本站即表示同意 <Link href="/terms">服务条款</Link> 与{" "}
+            <Link href="/privacy">隐私说明</Link>。
+          </p>
         </main>
       </>
     );

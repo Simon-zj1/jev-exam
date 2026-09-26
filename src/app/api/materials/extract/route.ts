@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         text: result.text,
         pageCount: result.pageCount,
         warnings: result.warnings,
+        health: result.health,
         charCount: result.stats.charCount,
         emptyPageCount: result.stats.emptyPageCount,
         fileName: file.name,
