@@ -10,7 +10,7 @@ import { readByok } from "@/lib/services/byok";
 import { getExamForUser } from "@/lib/services/generation";
 import { toGeneratedQuestion } from "@/lib/services/questions";
 import { syncReviewsFromAttempt } from "@/lib/services/reviews";
-import { recordChatUsage } from "@/lib/services/usage";
+import { assertWithinSpendCap, recordChatUsage } from "@/lib/services/usage";
 import type { AnswerKey, Judgment } from "@/lib/types";
 
 const MISTAKE_THRESHOLD_PERCENT = 60;
@@ -80,7 +80,10 @@ export async function judgeOneAnswerForUser(
   const engine = selection.engine;
 
   const needsEngine = question.type === "short_answer" || question.type === "cloze";
-  if (selection.countsAgainstQuota && needsEngine) await assertQuota(user.id, { judgment: 1 });
+  if (selection.countsAgainstQuota && needsEngine) {
+    await assertQuota(user.id, { judgment: 1 });
+    await assertWithinSpendCap(user.id);
+  }
 
   const blueprint = await store.getBlueprintById(exam.blueprintId);
   const topicSpans = new Map<string, string>();

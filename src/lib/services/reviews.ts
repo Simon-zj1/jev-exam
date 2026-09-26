@@ -16,7 +16,7 @@ import { usageCollector } from "@/lib/llm/usage";
 import { assertQuota, recordUsage } from "@/lib/quota";
 import { readByok } from "@/lib/services/byok";
 import { toGeneratedQuestion, toStudentQuestion } from "@/lib/services/questions";
-import { recordChatUsage } from "@/lib/services/usage";
+import { assertWithinSpendCap, recordChatUsage } from "@/lib/services/usage";
 
 /** 低于这个分数算「没掌握」，会进入复习队列 */
 const MISTAKE_THRESHOLD_PERCENT = 60;
@@ -227,7 +227,10 @@ export async function gradeReviewAnswer(
   const usage = usageCollector();
   const selection = resolveDecisionEngine({ byok, onChatUsage: usage.onChatUsage });
   const needsEngine = question.type === "short_answer" || question.type === "cloze";
-  if (selection.countsAgainstQuota && needsEngine) await assertQuota(user.id, { judgment: 1 });
+  if (selection.countsAgainstQuota && needsEngine) {
+    await assertQuota(user.id, { judgment: 1 });
+    await assertWithinSpendCap(user.id);
+  }
 
   const blueprint = await store.getBlueprintById(question.blueprintId);
   const materialExcerpt =

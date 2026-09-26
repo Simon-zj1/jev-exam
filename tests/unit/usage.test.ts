@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DAILY_SPEND_CAP_MICRO_USD } from "@/lib/config";
 import {
   DEFAULT_PRICE,
   estimateCostMicroUsd,
@@ -43,5 +44,9 @@ describe("模型成本估算", () => {
     expect(total.inputTokens).toBe(300);
     expect(total.outputTokens).toBe(130);
     expect(total.costMicroUsd).toBe(30);
+  });
+
+  it("消费上限有一个正的默认值（否则闸门形同虚设）", () => {
+    expect(DAILY_SPEND_CAP_MICRO_USD).toBeGreaterThan(0);
   });
 });

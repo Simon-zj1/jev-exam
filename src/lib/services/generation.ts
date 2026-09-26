@@ -13,7 +13,7 @@ import { assertQuota, recordUsage } from "@/lib/quota";
 import { usageCollector } from "@/lib/llm/usage";
 import { readByok } from "@/lib/services/byok";
 import { getMaterialForUser } from "@/lib/services/materials";
-import { recordChatUsage } from "@/lib/services/usage";
+import { assertWithinSpendCap, recordChatUsage } from "@/lib/services/usage";
 import { createId } from "@/lib/ids";
 import type { AnswerKey, GeneratedQuestion, Outline, Topic } from "@/lib/types";
 
@@ -31,10 +31,11 @@ export async function generateOutlineForMaterial(
 ): Promise<OutlineResult> {
   const material = await getMaterialForUser(user, materialId);
   const usage = usageCollector();
-  const { provider } = resolveGenerationProvider({
+  const { provider, countsAgainstQuota } = resolveGenerationProvider({
     byok: readByok(user),
     onChatUsage: usage.onChatUsage,
   });
+  if (countsAgainstQuota) await assertWithinSpendCap(user.id);
 
   const topicCount = clamp(options.topicCount ?? 6, 2, 12);
   let outline: Outline;
@@ -96,7 +97,10 @@ export async function createExamForMaterial(
     byok: readByok(user),
     onChatUsage: usage.onChatUsage,
   });
-  if (countsAgainstQuota) await assertQuota(user.id, { question: count });
+  if (countsAgainstQuota) {
+    await assertQuota(user.id, { question: count });
+    await assertWithinSpendCap(user.id);
+  }
 
   let generated;
   try {

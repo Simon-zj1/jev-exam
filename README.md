@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.7.1-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.8.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -197,9 +197,15 @@ and retrieval inside a material is lexical (TF × IDF: words for Latin, bigrams 
 may not be found, and the app then says so instead of guessing.
 
 Costs shown in settings are estimates derived from public price lists, useful for spotting trends and
-setting caps, not a provider invoice. There is no native app or offline web client yet: the delivery
-surfaces are web, CLI, Agent Skill and MCP. The CLI and skill run fully offline; the web app needs a
-network. iPad handwriting (PencilKit → recognition → the same grading pipeline) is not implemented.
+setting caps, not a provider invoice. The platform spend cap (default $0.50 per user per day, platform keys
+only) blocks the *next* model call once today's estimate is used up, so it can overshoot by one request —
+precise enforcement would need reservation and rollback. BYOK is never capped by the platform.
+
+There is no native app yet: the delivery surfaces are web, PWA, CLI, Agent Skill and MCP. The PWA caches
+**static assets only** — pages are server-rendered per logged-in user, and caching them in Cache Storage
+would leak data across accounts on a shared device. Offline you get an explanation page; genuinely offline
+material reading would need a local database and sync. The CLI and Agent Skill run fully offline. iPad
+handwriting (PencilKit → recognition → the same grading pipeline) is not implemented.
 
 ## License
 

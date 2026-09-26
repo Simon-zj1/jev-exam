@@ -10,6 +10,7 @@ import { checkQuota } from "@/lib/quota";
 import { readByok, summarizeByok } from "@/lib/services/byok";
 import { engineStatus } from "@/lib/services/status";
 import { todayLlmUsage } from "@/lib/services/usage";
+import { spendStatus } from "@/lib/services/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function SettingsPage() {
   const quota = await checkQuota(user.id, {});
   const byok = summarizeByok(readByok(user));
   const usage = await todayLlmUsage(user.id);
+  const spend = await spendStatus(user.id);
 
   return (
     <>
@@ -81,6 +83,21 @@ export default async function SettingsPage() {
                 {usage.total.outputTokens} tokens，估算 {formatMicroUsd(usage.total.costMicroUsd)}。
                 价格按公开价折算，用于看趋势，不等于账单。
               </p>
+              <div className="row row--between small">
+                <span className="muted">
+                  平台额度消费上限：{formatMicroUsd(spend.capMicroUsd)} / 天
+                  {spend.exceeded
+                    ? "（今日已达上限，配置自己的密钥不受限）"
+                    : `，还可估算 ${formatMicroUsd(spend.remainingMicroUsd)}`}
+                </span>
+                <span className="muted">{Math.round(spend.ratio * 100)}%</span>
+              </div>
+              <div className="meter">
+                <div
+                  className={`meter__fill${spend.ratio >= 1 ? " meter__fill--err" : spend.ratio >= 0.8 ? " meter__fill--warn" : ""}`}
+                  style={{ width: `${Math.round(spend.ratio * 100)}%` }}
+                />
+              </div>
               <table>
                 <thead>
                   <tr>

@@ -82,6 +82,16 @@ export const ASK_MAX_CITATIONS = 6;
 export const ASK_MIN_EVIDENCE = 1;
 export const ASK_MAX_QUESTION_CHARS = 400;
 
+/**
+ * 每人每天的模型消费上限（平台 Key，微美元）。
+*
+ * 次数额度防不住「一次出题烧掉一角钱」：材料很长时，一次生成就是几万 token。
+ * 这里按调用前的已记录成本做闸门——语义是「不允许再发起新调用」，
+ * 不是「这一笔不会超」，所以最坏情况会超出一个请求的量。这是有意的取舍：
+ * 精确到分需要预扣与回滚，复杂度远大于收益。
+ */
+export const DAILY_SPEND_CAP_MICRO_USD = 500_000; // $0.50
+
 /** 客户端可见的公开配置（不含任何密钥）。 */
 export function publicConfig() {
   return {

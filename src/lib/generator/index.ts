@@ -20,11 +20,20 @@ export type GenerationContext = {
   onChatUsage?: (event: ChatUsageEvent) => void;
 };
 
-let globalOverride: GenerationProvider | null = null;
+let globalOverride: { provider: GenerationProvider; countsAgainstQuota: boolean } | null = null;
 
-/** 测试/评测专用：强制所有出题走同一个 provider。 */
-export function setGenerationProviderOverride(provider: GenerationProvider | null): void {
-  globalOverride = provider;
+/**
+ * 测试/评测专用：强制所有出题走同一个 provider。
+ * 允许声明「算不算平台额度」，这样额度与消费上限两道闸门也能被真实覆盖到，
+ * 而不是只在生产路径上生效、测试里永远是空跑。
+ */
+export function setGenerationProviderOverride(
+  provider: GenerationProvider | null,
+  options: { countsAgainstQuota?: boolean } = {},
+): void {
+  globalOverride = provider
+    ? { provider, countsAgainstQuota: options.countsAgainstQuota ?? false }
+    : null;
 }
 
 /**
@@ -38,7 +47,11 @@ export function resolveGenerationProvider(context: GenerationContext = {}): Gene
     return { provider: context.override, mode: "offline", countsAgainstQuota: false };
   }
   if (globalOverride) {
-    return { provider: globalOverride, mode: "offline", countsAgainstQuota: false };
+    return {
+      provider: globalOverride.provider,
+      mode: "offline",
+      countsAgainstQuota: globalOverride.countsAgainstQuota,
+    };
   }
 
   const byokProvider = resolveByokChatProvider(context.byok);

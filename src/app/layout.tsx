@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { ServiceWorkerRegistrar } from "@/components/service-worker";
 import { APP_NAME, APP_TAGLINE } from "@/lib/config";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: `${APP_NAME} · 上传材料即可自助考试`,
   description: APP_TAGLINE,
+  applicationName: APP_NAME,
+  // 添加到 iOS 主屏后以独立窗口打开，而不是塞进 Safari 的书签栏
+  appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },
+};
+
+export const viewport = {
+  themeColor: "#2f5bff",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -20,7 +30,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorkerRegistrar />
+      </body>
     </html>
   );
 }

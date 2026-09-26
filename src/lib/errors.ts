@@ -45,6 +45,17 @@ export class QuotaExceededError extends AppError {
   }
 }
 
+/**
+ * 消费上限：与「次数额度」分开，因为它兜的是另一类风险——
+ * 一次出题可能烧掉一角钱，次数没超但钱先超了。
+ */
+export class SpendCapExceededError extends AppError {
+  constructor(message: string) {
+    super(message, 429, "spend_cap_exceeded");
+    this.name = "SpendCapExceededError";
+  }
+}
+
 export function toErrorResponse(error: unknown): { status: number; body: { error: string; code: string } } {
   if (error instanceof AppError) {
     return { status: error.status, body: { error: error.message, code: error.code } };

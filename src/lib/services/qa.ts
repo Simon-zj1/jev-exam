@@ -16,7 +16,7 @@ import { retrieveEvidence, type RetrievalResult } from "@/lib/retrieval";
 import { scanMaterial } from "@/lib/security/untrusted";
 import { readByok } from "@/lib/services/byok";
 import { getMaterialForUser } from "@/lib/services/materials";
-import { recordChatUsage } from "@/lib/services/usage";
+import { assertWithinSpendCap, recordChatUsage } from "@/lib/services/usage";
 
 /**
  * 材料问答：先检索证据，再让模型带着编号回答，最后逐条校验引注。
@@ -83,7 +83,10 @@ export async function askMaterialQuestion(
     };
   }
 
-  if (selection.countsAgainstQuota) await assertQuota(user.id, { ask: 1 });
+  if (selection.countsAgainstQuota) {
+    await assertQuota(user.id, { ask: 1 });
+    await assertWithinSpendCap(user.id);
+  }
 
   // 证据先用安全版本拼提示词（中和分隔符），但校验与展示仍用原文
   const safeEvidence = retrieval.evidence.map((unit) => ({

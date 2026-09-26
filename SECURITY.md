@@ -36,6 +36,13 @@
 - 生成的报告是**单文件、离线**的：不引用任何外部字体、脚本或图片，也不发起网络请求。
 - Web 界面通过 React 渲染文本，不使用 `dangerouslySetInnerHTML`。
 
+### Service Worker 缓存边界
+
+- 只缓存 `/_next/static/**` 与图标等静态资源，**不缓存任何业务页面与接口响应**。
+  页面按登录用户服务端渲染，缓存 HTML 会在同一台设备换账号时把内容串给另一个人。
+- 导航请求网络优先，失败才回落到 `/offline`；`/api/**` 一律直连网络。
+- Service Worker 只在生产构建注册，避免开发模式下缓存住 HMR 资源。
+
 ## 5. 密钥与数据
 
 - 用户的 BYOK 密钥使用 AES-256-GCM 加密后存库（密钥由 `SESSION_SECRET` 经 scrypt 派生），

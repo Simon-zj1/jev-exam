@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-v0.7.1-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-v0.8.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/standard-Agent%20Skills-5b6ee1" alt="Agent Skills">
   <img src="https://img.shields.io/badge/Next.js-15-000000" alt="Next.js">
@@ -391,9 +391,13 @@ examples/              示例材料
 7. **覆盖率不等于正确性**：覆盖率只说明「要点有没有被出题」，不说明题目本身出得好不好。
 8. **成本是估算值**：模型价格随时会变，设置页的今日成本按公开价折算，用于看趋势与设上限，
    不等于服务商的真实账单。
-9. **还没有原生端与离线 Web**：当前交付形态是 Web + CLI + Agent Skill + MCP。
-   Web 端需要联网（没有 PWA / Service Worker）；CLI 与 Agent Skill 可以完全离线运行。
+9. **还没有原生端**：当前交付形态是 Web + PWA + CLI + Agent Skill + MCP。
+   PWA 只缓存**静态外壳**（回访更快、离线给出说明页），业务页面一律联网——
+   页面按登录用户服务端渲染，缓存进 Cache Storage 会在同一台设备换账号时串数据。
+   真正的离线读材料需要本地数据库与同步，尚未实现。CLI 与 Agent Skill 可以完全离线运行。
    iPad 手写作答（PencilKit → 识别 → 同一套判定链路）尚未实现。
+10. **消费上限是「下一笔前拦住」**：最坏会超出一个请求的量。精确到分需要预扣与回滚，
+    对当前规模不值得，但足以兜住「有人刷你的 URL」和「一次超长材料烧掉一天预算」。
 
 ## 后续路线
 
