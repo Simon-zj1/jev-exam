@@ -22,6 +22,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
+        {/* Next 只输出新标准名 mobile-web-app-capable；旧版 iOS 认的是 apple- 前缀 */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         {/* 在首屏绘制前应用主题，避免深色模式闪白 */}
         <script
           dangerouslySetInnerHTML={{

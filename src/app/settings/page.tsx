@@ -31,7 +31,7 @@ export default async function SettingsPage() {
         <h1>设置</h1>
 
         <section className="card">
-          <h2>今日额度</h2>
+          {/* QuotaCard 自带「今日额度」标题，这里不再重复一遍 */}
           <QuotaCard usage={quota.usage} byokActive={byok.judgeConfigured || byok.llmConfigured} />
         </section>
 
@@ -74,30 +74,34 @@ export default async function SettingsPage() {
 
         <section className="card">
           <h2>今日模型成本（估算）</h2>
+          {/* 上限要一直可见：预算是在花钱之前看的，不是花完之后才出现的 */}
+          <div className="row row--between small">
+            <span className="muted">
+              平台额度消费上限：{formatMicroUsd(spend.capMicroUsd)} / 天
+              {spend.exceeded
+                ? "（今日已达上限，配置自己的密钥不受限）"
+                : `，还可用约 ${formatMicroUsd(spend.remainingMicroUsd)}`}
+            </span>
+            <span className="muted">{Math.round(spend.ratio * 100)}%</span>
+          </div>
+          <div className="meter">
+            <div
+              className={`meter__fill${spend.ratio >= 1 ? " meter__fill--err" : spend.ratio >= 0.8 ? " meter__fill--warn" : ""}`}
+              style={{ width: `${Math.round(spend.ratio * 100)}%` }}
+            />
+          </div>
+
           {usage.byModel.length === 0 ? (
-            <p className="small muted">今天还没有调用模型。</p>
+            <p className="small muted" style={{ marginTop: 12, marginBottom: 0 }}>
+              今天还没有调用模型。自带密钥（BYOK）的调用不计入平台成本，也不受这个上限限制。
+            </p>
           ) : (
             <>
-              <p className="small muted">
+              <p className="small muted" style={{ marginTop: 12 }}>
                 共 {usage.total.calls} 次调用，输入 {usage.total.inputTokens} tokens、输出{" "}
                 {usage.total.outputTokens} tokens，估算 {formatMicroUsd(usage.total.costMicroUsd)}。
                 价格按公开价折算，用于看趋势，不等于账单。
               </p>
-              <div className="row row--between small">
-                <span className="muted">
-                  平台额度消费上限：{formatMicroUsd(spend.capMicroUsd)} / 天
-                  {spend.exceeded
-                    ? "（今日已达上限，配置自己的密钥不受限）"
-                    : `，还可估算 ${formatMicroUsd(spend.remainingMicroUsd)}`}
-                </span>
-                <span className="muted">{Math.round(spend.ratio * 100)}%</span>
-              </div>
-              <div className="meter">
-                <div
-                  className={`meter__fill${spend.ratio >= 1 ? " meter__fill--err" : spend.ratio >= 0.8 ? " meter__fill--warn" : ""}`}
-                  style={{ width: `${Math.round(spend.ratio * 100)}%` }}
-                />
-              </div>
               <table>
                 <thead>
                   <tr>
