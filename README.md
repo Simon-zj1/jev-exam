@@ -37,6 +37,10 @@ combine the probabilities in code. Every point in the final score can be audited
 
 ![Material Q&A: the answer cites each sentence, with a source list naming sentence and page plus verification notices](docs/screenshots/ask-960.jpg)
 
+![Settings: privacy notes, three export formats, and an account-deletion entry](docs/screenshots/export-960.jpg)
+
+![Result page: a report-a-wrong-grade form under each question, with honest coverage on the same page](docs/screenshots/feedback-960.jpg)
+
 > Screenshots come from the offline demo mode (the fallback engine used when no API key is configured), so
 > question style is mechanical and grading uses lexical overlap instead of Jev. With `TYPESAFE_API_KEY` the
 > UI is identical and the grading quality is not.

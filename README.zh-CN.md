@@ -44,6 +44,10 @@
 
 ![材料问答：回答逐句带引注，下方列出每条出处（第几句、第几页）与核验提示](docs/screenshots/ask-960.jpg)
 
+![设置页：数据与隐私、三种格式导出、账号删除入口](docs/screenshots/export-960.jpg)
+
+![结果页：每题下方可上报判错，同页如实显示覆盖率](docs/screenshots/feedback-960.jpg)
+
 > 截图来自本地离线演示模式（未配置 API key 时的降级引擎），所以出题风格偏机械、
 > 判定用的是词面近似而非 Jev。接入 `TYPESAFE_API_KEY` 后界面一致，判定质量不同。
 >
