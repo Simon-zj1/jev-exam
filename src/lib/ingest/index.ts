@@ -4,6 +4,7 @@ import { extractDocxText } from "@/lib/ingest/docx";
 import { detectFileKind, titleFromFileName } from "@/lib/ingest/file-kind";
 import { extractPdfText } from "@/lib/ingest/pdf";
 import type { IngestResult, SourceMap } from "@/lib/ingest/types";
+import { normalizeCjkCompatibility } from "@/lib/text";
 
 export type { IngestKind, IngestPage, IngestResult, SourceMap } from "@/lib/ingest/types";
 export { pageAt } from "@/lib/ingest/types";
@@ -45,7 +46,9 @@ export async function extractMaterialFromFile(input: {
     } else if (detected.kind === "docx") {
       result = await extractDocxText(buffer, fileName);
     } else {
-      const text = Buffer.from(buffer).toString("utf8").replace(/\r\n?/g, "\n").trim();
+      const text = normalizeCjkCompatibility(
+        Buffer.from(buffer).toString("utf8").replace(/\r\n?/g, "\n"),
+      ).trim();
       result = {
         kind: "text",
         title: titleFromFileName(fileName),

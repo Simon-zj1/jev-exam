@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { INGEST_MAX_PAGES, MAX_MATERIAL_CHARS } from "@/lib/config";
 import { titleFromFileName } from "@/lib/ingest/file-kind";
 import type { IngestPage, IngestResult } from "@/lib/ingest/types";
+import { normalizeCjkCompatibility } from "@/lib/text";
 
 /** pdfjs 的文本项：只需要位置与文本，其余字段忽略。 */
 type PdfTextItem = {
@@ -123,7 +124,8 @@ export async function extractPdfText(buffer: Uint8Array, fileName: string): Prom
   for (let pageNumber = 1; pageNumber <= limit; pageNumber += 1) {
     const page = await document.getPage(pageNumber);
     const content = await page.getTextContent();
-    const pageText = itemsToLines(content.items).join("\n").trim();
+    // 兼容字形归一化必须在记录偏移之前做，否则页码区间会与实际正文错位
+    const pageText = normalizeCjkCompatibility(itemsToLines(content.items).join("\n")).trim();
 
     if (!pageText) {
       emptyPageCount += 1;

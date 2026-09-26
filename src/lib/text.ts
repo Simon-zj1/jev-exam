@@ -1,6 +1,21 @@
 /** 文本归一化与相似度工具：客观题判分、锚点定位、去重都依赖它。 */
 
 /**
+ * 只归一化 CJK 兼容区字形（康熙部首、兼容汉字），不动全角标点。
+ *
+ * 有些 PDF 生成器会把「一」「文」「用」写成 U+2F00 这类康熙部首字形，
+ * 直接存进材料就会满篇错字，中文分词（按 \u4e00-\u9fff 切）也会整块失效。
+ * 不能整体 NFKC：那会把全角逗号、冒号也换成半角，破坏「逐字溯源」的保真度。
+ */
+const CJK_COMPATIBILITY = /[\u2e80-\u2fdf\uf900-\ufaff]|[\u{2f800}-\u{2fa1f}]/gu;
+
+export function normalizeCjkCompatibility(input: string): string {
+  if (!CJK_COMPATIBILITY.test(input)) return input;
+  CJK_COMPATIBILITY.lastIndex = 0;
+  return input.replace(CJK_COMPATIBILITY, (char) => char.normalize("NFKC"));
+}
+
+/**
  * 归一化：NFKC（全角→半角）、转小写、去掉标点与空白。
  * 中文标点与英文标点统一剥离，便于“异步/异步。”之类差异的对齐。
  */

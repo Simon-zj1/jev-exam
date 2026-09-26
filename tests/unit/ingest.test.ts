@@ -84,6 +84,18 @@ describe("Word 解析", () => {
 });
 
 describe("上传边界", () => {
+  it("康熙部首/兼容字形会被还原成正常汉字，且不动全角标点", async () => {
+    // 这些字形是真实 PDF 里出现过的：⼀（U+2F00）⽂（U+2F8A）⽤（U+2F63）
+    const broken = "⼀⽂⽤，⼀个字。";
+    const { result } = await extractMaterialFromFile({
+      buffer: new TextEncoder().encode(`${broken}${"补充内容".repeat(30)}`),
+      fileName: "兼容字形.txt",
+    });
+    expect(result.text.startsWith("一文用，一个字。")).toBe(true);
+    // 全角标点保持原样，不做整段 NFKC（否则「逐字溯源」的保真度会被破坏）
+    expect(result.text).toContain("，");
+  });
+
   it("空文件与不支持的类型都会被拒绝", async () => {
     await expect(
       extractMaterialFromFile({ buffer: new Uint8Array(), fileName: "empty.pdf" }),

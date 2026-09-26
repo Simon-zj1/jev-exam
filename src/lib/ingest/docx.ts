@@ -1,6 +1,7 @@
 import { MAX_MATERIAL_CHARS } from "@/lib/config";
 import { titleFromFileName } from "@/lib/ingest/file-kind";
 import type { IngestResult } from "@/lib/ingest/types";
+import { normalizeCjkCompatibility } from "@/lib/text";
 
 type MammothModule = {
   extractRawText: (input: { buffer: Buffer }) => Promise<{ value: string; messages: unknown[] }>;
@@ -25,11 +26,12 @@ export async function extractDocxText(buffer: Uint8Array, fileName: string): Pro
   const mammoth = await loadMammoth();
   const { value } = await mammoth.extractRawText({ buffer: Buffer.from(buffer) });
 
-  const normalized = value
-    .replace(/\r\n?/g, "\n")
-    // Word 的空段落会连出多个空行，压掉避免材料里出现大片空白
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  const normalized = normalizeCjkCompatibility(
+    value
+      .replace(/\r\n?/g, "\n")
+      // Word 的空段落会连出多个空行，压掉避免材料里出现大片空白
+      .replace(/\n{3,}/g, "\n\n"),
+  ).trim();
 
   const warnings: string[] = [];
   const text = normalized.length > MAX_MATERIAL_CHARS ? normalized.slice(0, MAX_MATERIAL_CHARS) : normalized;
