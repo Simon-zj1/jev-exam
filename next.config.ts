@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   // 显式声明让这些资源随 extract 函数一起上传（否则线上会丢字形与部分解码器）。
   outputFileTracingIncludes: {
     "/api/materials/extract": [
+      // pdfjs 在运行时用动态 import 找 worker，静态追踪看不到这个引用；
+      // 少一个文件就是线上 400（本地开发不会复现，因为本地 node_modules 是完整的）。
+      "./node_modules/pdfjs-dist/legacy/build/**/*",
       "./node_modules/pdfjs-dist/standard_fonts/**/*",
       "./node_modules/pdfjs-dist/wasm/**/*",
       "./node_modules/pdfjs-dist/cmaps/**/*",
